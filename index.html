@@ -823,7 +823,7 @@
       </label>
       <div class="row-actions">
         <button class="btn primary" value="save">บันทึก</button>
-        <button class="btn" value="cancel" formnovalidate>ยกเลิก</button>
+        <button class="btn" type="button" id="cancelCustomerBtn">ยกเลิก</button>
       </div>
     </form>
   </dialog>
@@ -866,6 +866,7 @@
       entryRows: document.getElementById("entryRows"),
       customerDialog: document.getElementById("customerDialog"),
       customerForm: document.getElementById("customerForm"),
+      cancelCustomerBtn: document.getElementById("cancelCustomerBtn"),
       customerId: document.getElementById("customerId"),
       customerName: document.getElementById("customerName"),
       customerNote: document.getElementById("customerNote"),
@@ -1120,6 +1121,7 @@
     });
     els.reloadBtn.addEventListener("click", loadData);
     els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
+    els.cancelCustomerBtn.addEventListener("click", () => els.customerDialog.close());
     els.search.addEventListener("input", event => {
       state.search = event.target.value;
       render();
