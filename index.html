@@ -41,6 +41,7 @@
 
     button {
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     header {
@@ -140,7 +141,7 @@
     select,
     textarea {
       width: 100%;
-      min-height: 40px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 0 11px;
@@ -155,7 +156,7 @@
     }
 
     .btn {
-      min-height: 40px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 0 12px;
@@ -226,7 +227,7 @@
     }
 
     .btn.small {
-      min-height: 32px;
+      min-height: 38px;
       padding: 0 10px;
       font-size: 13px;
     }
@@ -463,6 +464,14 @@
     }
 
     @media (max-width: 960px) {
+      header {
+        padding: 14px 12px;
+      }
+
+      .wrap {
+        width: min(100% - 20px, 1240px);
+      }
+
       .layout,
       .header-actions,
       .settings,
@@ -475,6 +484,206 @@
 
       .customer-list {
         max-height: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        background: #eef2f6;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        display: none;
+      }
+
+      main {
+        padding-top: 10px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .header-actions {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+
+      .header-actions .btn {
+        min-width: 92px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 10px;
+      }
+
+      .stat b {
+        font-size: 20px;
+      }
+
+      .stat:nth-child(2) {
+        grid-column: 1 / -1;
+        order: -1;
+      }
+
+      .panel {
+        border-radius: 8px;
+      }
+
+      .panel-head,
+      .panel-body,
+      .customer-tools {
+        padding: 10px;
+      }
+
+      .customer-tools {
+        grid-template-columns: 1fr 132px;
+        gap: 8px;
+      }
+
+      .customer-list {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(168px, 74vw);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 10px;
+        scroll-snap-type: x proximity;
+      }
+
+      .customer {
+        min-height: 72px;
+        scroll-snap-align: start;
+      }
+
+      .customer-meta {
+        font-size: 11px;
+      }
+
+      .selected-name {
+        font-size: 24px;
+      }
+
+      .selected-total {
+        font-size: 30px;
+      }
+
+      .ledger-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .btn.delete-all,
+      .btn.pay-all {
+        min-height: 48px;
+        font-size: 14px;
+        padding: 0 8px;
+      }
+
+      .entry-form {
+        margin-top: 10px;
+        padding: 10px;
+      }
+
+      .entry-form .btn {
+        min-height: 50px;
+        font-size: 16px;
+      }
+
+      .table-wrap {
+        border: 0;
+        overflow: visible;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      tr.paid-row {
+        text-decoration: none;
+        opacity: 0.72;
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 10px;
+        min-height: 42px;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      td::before {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      td:nth-child(1)::before { content: "วันที่"; }
+      td:nth-child(2)::before { content: "ยอด"; }
+      td:nth-child(3)::before { content: "สถานะ"; }
+      td:nth-child(4)::before { content: "หมายเหตุ"; }
+      td:nth-child(5)::before { content: "จัดการ"; }
+
+      td[colspan] {
+        display: block;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      td[colspan]::before {
+        content: "";
+        display: none;
+      }
+
+      .row-actions .btn {
+        flex: 1;
+        min-height: 40px;
+      }
+
+      dialog {
+        width: calc(100% - 20px);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .customer-tools,
+      .header-actions,
+      .ledger-actions {
+        grid-template-columns: 1fr;
       }
     }
   </style>
