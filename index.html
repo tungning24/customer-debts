@@ -269,6 +269,11 @@
       display: none;
     }
 
+    .customer-search,
+    .customer-filter {
+      display: block;
+    }
+
     .customer-list {
       display: grid;
       gap: 8px;
@@ -556,8 +561,19 @@
         gap: 8px;
       }
 
+      .customer-search,
+      .customer-filter {
+        display: none;
+      }
+
       .customer-select {
         display: block;
+        min-height: 52px;
+        border-color: var(--accent);
+        background: #ecfdf5;
+        color: var(--accent-dark);
+        font-weight: 900;
+        box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
       }
 
       .customer-list {
@@ -724,11 +740,11 @@
           <button class="btn small" type="button" id="addCustomerBtn">เพิ่มคน</button>
         </div>
         <div class="customer-tools">
-          <input id="search" type="search" placeholder="ค้นหาชื่อลูกค้า">
+          <input id="search" class="customer-search" type="search" placeholder="ค้นหาชื่อลูกค้า">
           <select id="customerSelect" class="customer-select">
             <option value="">เลือกลูกค้า</option>
           </select>
-          <select id="customerFilter">
+          <select id="customerFilter" class="customer-filter">
             <option value="all">ทั้งหมด</option>
             <option value="open">เฉพาะคนค้าง</option>
           </select>
