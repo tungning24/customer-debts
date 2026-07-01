@@ -1000,18 +1000,36 @@ if ('serviceWorker' in navigator) {
       return state.customers.find(customer => customer.id === state.selectedCustomerId);
     }
 
+    function isActiveCustomer(customer) {
+      return customer.active !== false;
+    }
+
+    function normalizedSortOrder(customer) {
+      const sortOrder = Number(customer.sortOrder);
+      return Number.isFinite(sortOrder) && sortOrder > 0 ? sortOrder : Number.MAX_SAFE_INTEGER;
+    }
+
+    function nextCustomerSortOrder() {
+      return state.customers.reduce((max, customer) => {
+        const sortOrder = Number(customer.sortOrder);
+        return Number.isFinite(sortOrder) && sortOrder > max ? sortOrder : max;
+      }, 0) + 1;
+    }
+
     function filteredCustomers() {
       const text = state.search.trim().toLowerCase();
       return state.customers
+        .filter(isActiveCustomer)
         .map(customer => ({ ...customer, total: customerTotal(customer.id), openCount: openEntries(customer.id).length }))
         .filter(customer => state.customerFilter === "all" || customer.total > 0)
         .filter(customer => !text || [customer.name, customer.note].join(" ").toLowerCase().includes(text))
-        .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, "th"));
+        .sort((a, b) => normalizedSortOrder(a) - normalizedSortOrder(b) || b.total - a.total || a.name.localeCompare(b.name, "th"));
     }
 
     function renderStats() {
-      const openCustomers = state.customers.filter(customer => customerTotal(customer.id) > 0);
-      const openEntriesCount = state.entries.filter(entry => entry.status !== "paid").length;
+      const activeCustomerIds = new Set(state.customers.filter(isActiveCustomer).map(customer => customer.id));
+      const openCustomers = state.customers.filter(customer => isActiveCustomer(customer) && customerTotal(customer.id) > 0);
+      const openEntriesCount = state.entries.filter(entry => activeCustomerIds.has(entry.customerId) && entry.status !== "paid").length;
       const total = openCustomers.reduce((sum, customer) => sum + customerTotal(customer.id), 0);
       els.customerCount.textContent = money.format(openCustomers.length);
       els.openTotal.textContent = `${money.format(total)} บาท`;
@@ -1031,7 +1049,7 @@ if ('serviceWorker' in navigator) {
       els.customerSelect.value = customers.some(customer => customer.id === state.selectedCustomerId) ? state.selectedCustomerId : "";
 
       if (!customers.length) {
-        const hasCustomers = state.customers.length > 0;
+        const hasCustomers = state.customers.some(isActiveCustomer);
         els.customerList.innerHTML = `<div class="empty">${hasCustomers ? "ไม่มีลูกค้าที่ตรงกับตัวกรอง" : "ยังไม่มีลูกค้า"}</div>`;
         return;
       }
@@ -1120,10 +1138,11 @@ if ('serviceWorker' in navigator) {
         const result = await api("list");
         state.customers = Array.isArray(result.customers) ? result.customers : [];
         state.entries = Array.isArray(result.entries) ? result.entries : [];
-        showMessage(`โหลดข้อมูลแล้ว: ลูกค้า ${money.format(state.customers.length)} คน`);
-        if (!state.selectedCustomerId && state.customers.length) {
-          const firstOpen = state.customers.find(customer => customerTotal(customer.id) > 0);
-          state.selectedCustomerId = firstOpen?.id || state.customers[0].id;
+        const customers = filteredCustomers();
+        showMessage(`โหลดข้อมูลแล้ว: ลูกค้า ${money.format(customers.length)} คน`);
+        if (!customers.some(customer => customer.id === state.selectedCustomerId)) {
+          const firstOpen = customers.find(customer => customer.total > 0);
+          state.selectedCustomerId = firstOpen?.id || customers[0]?.id || "";
         }
         render();
       } catch (error) {
@@ -1167,7 +1186,9 @@ if ('serviceWorker' in navigator) {
         customer: {
           id: els.customerId.value,
           name: els.customerName.value.trim(),
-          note: els.customerNote.value.trim()
+          note: els.customerNote.value.trim(),
+          sortOrder: action === "addCustomer" ? nextCustomerSortOrder() : undefined,
+          active: action === "addCustomer" ? true : undefined
         }
       });
       if (result.customer?.id) {

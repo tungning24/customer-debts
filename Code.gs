@@ -1,7 +1,7 @@
 const ADMIN_KEY = "change-this-key";
 const CUSTOMERS_SHEET = "Customers";
 const ENTRIES_SHEET = "DebtEntries";
-const CUSTOMER_HEADERS = ["id", "name", "note", "createdAt", "updatedAt"];
+const CUSTOMER_HEADERS = ["id", "name", "note", "createdAt", "updatedAt", "sortOrder", "active"];
 const ENTRY_HEADERS = ["id", "customerId", "date", "amount", "status", "note", "createdAt", "updatedAt", "paidAt"];
 
 function doGet() {
@@ -87,6 +87,8 @@ function setupSheets() {
   if (!customers) {
     customers = ss.insertSheet(CUSTOMERS_SHEET);
     customers.appendRow(CUSTOMER_HEADERS);
+  } else {
+    customers.getRange(1, 1, 1, CUSTOMER_HEADERS.length).setValues([CUSTOMER_HEADERS]);
   }
 
   if (!entries) {
@@ -104,7 +106,9 @@ function listCustomers() {
       name: row.name,
       note: row.note || "",
       createdAt: row.createdAt || "",
-      updatedAt: row.updatedAt || ""
+      updatedAt: row.updatedAt || "",
+      sortOrder: normalizeSortOrder(row.sortOrder),
+      active: normalizeActive(row.active)
     }));
 }
 
@@ -131,15 +135,26 @@ function addCustomer(customer) {
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CUSTOMERS_SHEET);
   const now = nowText();
+  const sortOrder = normalizeSortOrder(customer.sortOrder) || nextCustomerSortOrder(sheet);
   const output = {
     id: Utilities.getUuid(),
     name,
     note: String(customer.note || "").trim(),
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
+    sortOrder,
+    active: normalizeActive(customer.active)
   };
 
-  sheet.appendRow([output.id, output.name, output.note, output.createdAt, output.updatedAt]);
+  sheet.appendRow([
+    output.id,
+    output.name,
+    output.note,
+    output.createdAt,
+    output.updatedAt,
+    output.sortOrder,
+    output.active
+  ]);
   return output;
 }
 
@@ -163,6 +178,24 @@ function updateCustomer(customer) {
     note: String(customer.note || "").trim(),
     updatedAt: now
   };
+}
+
+function nextCustomerSortOrder(sheet) {
+  const customers = recordsFromSheet(sheet, CUSTOMER_HEADERS);
+  return customers.reduce((max, customer) => {
+    const sortOrder = normalizeSortOrder(customer.sortOrder);
+    return sortOrder && sortOrder > max ? sortOrder : max;
+  }, 0) + 1;
+}
+
+function normalizeSortOrder(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : "";
+}
+
+function normalizeActive(value) {
+  if (value === false) return false;
+  return String(value).trim().toLowerCase() !== "false";
 }
 
 function addDebt(customerId, date, amount, note) {
