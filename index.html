@@ -265,6 +265,10 @@
       border-bottom: 1px solid var(--line);
     }
 
+    .customer-select {
+      display: none;
+    }
+
     .customer-list {
       display: grid;
       gap: 8px;
@@ -548,26 +552,16 @@
       }
 
       .customer-tools {
-        grid-template-columns: 1fr 132px;
+        grid-template-columns: 1fr;
         gap: 8px;
       }
 
+      .customer-select {
+        display: block;
+      }
+
       .customer-list {
-        grid-auto-flow: column;
-        grid-auto-columns: minmax(168px, 74vw);
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 10px;
-        scroll-snap-type: x proximity;
-      }
-
-      .customer {
-        min-height: 72px;
-        scroll-snap-align: start;
-      }
-
-      .customer-meta {
-        font-size: 11px;
+        display: none;
       }
 
       .selected-name {
@@ -731,6 +725,9 @@
         </div>
         <div class="customer-tools">
           <input id="search" type="search" placeholder="ค้นหาชื่อลูกค้า">
+          <select id="customerSelect" class="customer-select">
+            <option value="">เลือกลูกค้า</option>
+          </select>
           <select id="customerFilter">
             <option value="all">ทั้งหมด</option>
             <option value="open">เฉพาะคนค้าง</option>
@@ -838,6 +835,7 @@
       entryCount: document.getElementById("entryCount"),
       addCustomerBtn: document.getElementById("addCustomerBtn"),
       search: document.getElementById("search"),
+      customerSelect: document.getElementById("customerSelect"),
       customerFilter: document.getElementById("customerFilter"),
       customerList: document.getElementById("customerList"),
       selectedName: document.getElementById("selectedName"),
@@ -980,6 +978,16 @@
 
     function renderCustomers() {
       const customers = filteredCustomers();
+      els.customerSelect.innerHTML = [
+        `<option value="">เลือกลูกค้า</option>`,
+        ...customers.map(customer => {
+          const total = money.format(customer.total);
+          const label = `${customer.name} - ${total} บาท`;
+          return `<option value="${escapeHtml(customer.id)}">${escapeHtml(label)}</option>`;
+        })
+      ].join("");
+      els.customerSelect.value = customers.some(customer => customer.id === state.selectedCustomerId) ? state.selectedCustomerId : "";
+
       if (!customers.length) {
         const hasCustomers = state.customers.length > 0;
         els.customerList.innerHTML = `<div class="empty">${hasCustomers ? "ไม่มีลูกค้าที่ตรงกับตัวกรอง" : "ยังไม่มีลูกค้า"}</div>`;
@@ -1098,11 +1106,15 @@
     els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
     els.search.addEventListener("input", event => {
       state.search = event.target.value;
-      renderCustomers();
+      render();
+    });
+    els.customerSelect.addEventListener("change", event => {
+      state.selectedCustomerId = event.target.value;
+      render();
     });
     els.customerFilter.addEventListener("change", event => {
       state.customerFilter = event.target.value;
-      renderCustomers();
+      render();
     });
 
     els.customerForm.addEventListener("submit", async event => {
