@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>บัญชีลูกค้าค้างจ่าย</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e1ec;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+      --danger: #b42318;
+      --paid: #667085;
+      --warn-bg: #fff7ed;
+      --shadow: 0 14px 34px rgba(23, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Tahoma, "Noto Sans Thai", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    header {
+      background: #102a43;
+      color: #fff;
+      padding: 18px 16px;
+    }
+
+    .wrap {
+      width: min(1240px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-actions {
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .header-actions label {
+      color: #dbeafe;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 16px 0 36px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 11px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 74px;
+      padding-top: 9px;
+      resize: vertical;
+    }
+
+    .btn {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 900;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn.danger {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .btn.delete-all {
+      width: 100%;
+      min-height: 40px;
+      background: #fff5f5;
+      border-color: #fca5a5;
+      color: var(--danger);
+    }
+
+    .btn.delete-all:disabled {
+      cursor: not-allowed;
+      background: #f8fafc;
+      border-color: var(--line);
+      color: #94a3b8;
+    }
+
+    .btn.pay-all {
+      width: 100%;
+      min-height: 46px;
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+      font-size: 16px;
+      box-shadow: 0 10px 24px rgba(220, 38, 38, 0.24);
+    }
+
+    .btn.pay-all:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
+    .btn.pay-all:disabled {
+      cursor: not-allowed;
+      background: #cbd5e1;
+      border-color: #cbd5e1;
+      color: #64748b;
+      box-shadow: none;
+    }
+
+    .ledger-actions {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn.small {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .customer-tools {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .customer-list {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      max-height: calc(100vh - 320px);
+      overflow: auto;
+    }
+
+    .customer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      min-height: 56px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .customer.active {
+      border-color: var(--accent);
+      background: #ecfdf5;
+    }
+
+    .customer-name {
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .customer-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .amount {
+      color: var(--danger);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .ledger-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .ledger-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .selected-name {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .selected-total {
+      color: var(--danger);
+      font-size: 26px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .entry-form {
+      display: grid;
+      grid-template-columns: 150px 150px 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eef4fb;
+      color: #32445a;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tr.paid-row {
+      color: var(--paid);
+      background: #f8fafc;
+      text-decoration: line-through;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      background: var(--warn-bg);
+      color: #b45309;
+    }
+
+    .badge.paid {
+      background: #f1f5f9;
+      color: var(--paid);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    dialog {
+      width: min(420px, calc(100% - 28px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      box-shadow: var(--shadow);
+    }
+
+    dialog::backdrop {
+      background: rgba(16, 42, 67, 0.36);
+    }
+
+    .dialog-content {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .message {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      max-width: min(420px, calc(100% - 32px));
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #102a43;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      z-index: 20;
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 960px) {
+      .layout,
+      .header-actions,
+      .settings,
+      .stats,
+      .entry-form,
+      .ledger-actions,
+      .ledger-head {
+        grid-template-columns: 1fr;
+      }
+
+      .customer-list {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1>บัญชีลูกค้าค้างจ่าย</h1>
+        <p class="subtitle">รูปแบบสมุด: แยกหน้ารายคน แยกรายการซื้อ และปิดยอดรวมเมื่อจ่ายแล้ว</p>
+      </div>
+      <div class="header-actions">
+        <label>
+          Admin key
+          <input id="adminKey" placeholder="รหัสแก้ไขข้อมูล">
+        </label>
+        <button class="btn small" type="button" id="reloadBtn">โหลดใหม่</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <input id="webAppUrl" type="hidden" value="https://script.google.com/macros/s/AKfycbzJG-Q6o8xqzVS_XecbpCvXfGuw-B_vXBQDXSf2HPTgpi7GipNt9UYYzZAT8Wq3aj8K/exec">
+
+    <section class="stats">
+      <div class="stat">
+        <b id="customerCount">0</b>
+        <span>คนที่ยังค้าง</span>
+      </div>
+      <div class="stat">
+        <b id="openTotal">0</b>
+        <span>ยอดค้างรวม</span>
+      </div>
+      <div class="stat">
+        <b id="entryCount">0</b>
+        <span>รายการที่ยังไม่จ่าย</span>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>รายชื่อลูกค้า</h2>
+          <button class="btn small" type="button" id="addCustomerBtn">เพิ่มคน</button>
+        </div>
+        <div class="customer-tools">
+          <input id="search" type="search" placeholder="ค้นหาชื่อลูกค้า">
+          <select id="customerFilter">
+            <option value="all">ทั้งหมด</option>
+            <option value="open">เฉพาะคนค้าง</option>
+          </select>
+        </div>
+        <div id="customerList" class="customer-list">
+          <div class="empty">ยังไม่มีข้อมูล</div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head ledger-head">
+          <div class="ledger-title">
+            <div class="muted">หน้าลูกค้า</div>
+            <div id="selectedName" class="selected-name">เลือกชื่อลูกค้า</div>
+            <div id="selectedNote" class="muted"></div>
+          </div>
+          <div>
+            <div class="muted">ยอดค้าง</div>
+            <div id="selectedTotal" class="selected-total">0 บาท</div>
+            <div class="ledger-actions">
+              <button class="btn delete-all" type="button" id="deleteCustomerEntriesBtn">ลบรายการทั้งหมด</button>
+              <button class="btn pay-all" type="button" id="payCustomerBtn">ปิดยอดรวม</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <form id="entryForm" class="entry-form">
+            <label>
+              วันที่
+              <input id="entryDate" type="date" required>
+            </label>
+            <label>
+              ยอดค้างเพิ่ม
+              <input id="entryAmount" type="number" min="0" step="0.01" required placeholder="เช่น 50">
+            </label>
+            <label>
+              หมายเหตุ
+              <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
+            </label>
+            <button class="btn primary" type="submit">เพิ่มยอด</button>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>วันที่</th>
+                  <th>ยอด</th>
+                  <th>สถานะ</th>
+                  <th>หมายเหตุ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="entryRows">
+                <tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="customerDialog">
+    <form method="dialog" class="dialog-content" id="customerForm">
+      <h2>เพิ่มลูกค้า</h2>
+      <input type="hidden" id="customerId">
+      <label>
+        ชื่อลูกค้า
+        <input id="customerName" required placeholder="เช่น ป้าสมใจ">
+      </label>
+      <label>
+        เบอร์/หมายเหตุ
+        <textarea id="customerNote" placeholder="บ้านเลขที่ เบอร์โทร หรือรายละเอียดสั้น ๆ"></textarea>
+      </label>
+      <div class="row-actions">
+        <button class="btn primary" value="save">บันทึก</button>
+        <button class="btn" value="cancel" formnovalidate>ยกเลิก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="message" class="message"></div>
+
+  <script>
+    const STORE_KEY = "customer-debts-settings";
+
+    const state = {
+      customers: [],
+      entries: [],
+      selectedCustomerId: "",
+      search: "",
+      customerFilter: "all",
+      busy: false
+    };
+
+    const els = {
+      webAppUrl: document.getElementById("webAppUrl"),
+      adminKey: document.getElementById("adminKey"),
+      reloadBtn: document.getElementById("reloadBtn"),
+      customerCount: document.getElementById("customerCount"),
+      openTotal: document.getElementById("openTotal"),
+      entryCount: document.getElementById("entryCount"),
+      addCustomerBtn: document.getElementById("addCustomerBtn"),
+      search: document.getElementById("search"),
+      customerFilter: document.getElementById("customerFilter"),
+      customerList: document.getElementById("customerList"),
+      selectedName: document.getElementById("selectedName"),
+      selectedNote: document.getElementById("selectedNote"),
+      selectedTotal: document.getElementById("selectedTotal"),
+      payCustomerBtn: document.getElementById("payCustomerBtn"),
+      deleteCustomerEntriesBtn: document.getElementById("deleteCustomerEntriesBtn"),
+      entryForm: document.getElementById("entryForm"),
+      entryDate: document.getElementById("entryDate"),
+      entryAmount: document.getElementById("entryAmount"),
+      entryNote: document.getElementById("entryNote"),
+      entryRows: document.getElementById("entryRows"),
+      customerDialog: document.getElementById("customerDialog"),
+      customerForm: document.getElementById("customerForm"),
+      customerId: document.getElementById("customerId"),
+      customerName: document.getElementById("customerName"),
+      customerNote: document.getElementById("customerNote"),
+      message: document.getElementById("message")
+    };
+
+    const money = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 2 });
+    const dateFormat = new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "short", day: "numeric" });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function todayText() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function formatDate(value) {
+      const date = new Date(`${value}T00:00:00`);
+      return Number.isNaN(date.getTime()) ? value : dateFormat.format(date);
+    }
+
+    function showMessage(text) {
+      els.message.textContent = text;
+      els.message.classList.add("show");
+      window.clearTimeout(showMessage.timer);
+      showMessage.timer = window.setTimeout(() => els.message.classList.remove("show"), 2600);
+    }
+
+    function saveSettings(show = true) {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        adminKey: els.adminKey.value
+      }));
+      if (show) showMessage("บันทึก admin key แล้ว");
+    }
+
+    function loadSettings() {
+      try {
+        const settings = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+        els.adminKey.value = settings.adminKey || "";
+      } catch {
+        localStorage.removeItem(STORE_KEY);
+      }
+    }
+
+    function validateWebAppUrl(url) {
+      if (!url) return "กรอก Apps Script Web App URL ก่อน";
+      if (url.includes("/macros/library/")) return "URL นี้เป็น Library URL ต้องใช้ Web App URL ที่ลงท้าย /exec";
+      if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/i.test(url)) return "Web App URL ต้องเป็น https://script.google.com/macros/s/.../exec";
+      return "";
+    }
+
+    async function api(action, payload = {}) {
+      if (state.busy) throw new Error("busy");
+      const webAppUrl = els.webAppUrl.value.trim();
+      const adminKey = els.adminKey.value;
+      const urlError = validateWebAppUrl(webAppUrl);
+      if (urlError || !adminKey) {
+        const message = urlError || "กรอก admin key ก่อน";
+        showMessage(message);
+        throw new Error(message);
+      }
+
+      state.busy = true;
+      saveSettings(false);
+      try {
+        const response = await fetch(webAppUrl, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action, adminKey, ...payload })
+        });
+        const text = await response.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch {
+          throw new Error("Apps Script ไม่ได้ตอบกลับ JSON ตรวจ access เป็น Anyone และ deploy version ล่าสุด");
+        }
+        if (!result.ok) {
+          const detail = result.error === "unknown action"
+            ? "unknown action: ต้อง deploy Code.gs เวอร์ชันล่าสุด"
+            : result.error || "Apps Script error";
+          throw new Error(detail);
+        }
+        return result;
+      } finally {
+        state.busy = false;
+      }
+    }
+
+    function openEntries(customerId) {
+      return state.entries.filter(entry => entry.customerId === customerId && entry.status !== "paid");
+    }
+
+    function customerTotal(customerId) {
+      return openEntries(customerId).reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+    }
+
+    function selectedCustomer() {
+      return state.customers.find(customer => customer.id === state.selectedCustomerId);
+    }
+
+    function filteredCustomers() {
+      const text = state.search.trim().toLowerCase();
+      return state.customers
+        .map(customer => ({ ...customer, total: customerTotal(customer.id), openCount: openEntries(customer.id).length }))
+        .filter(customer => state.customerFilter === "all" || customer.total > 0)
+        .filter(customer => !text || [customer.name, customer.note].join(" ").toLowerCase().includes(text))
+        .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, "th"));
+    }
+
+    function renderStats() {
+      const openCustomers = state.customers.filter(customer => customerTotal(customer.id) > 0);
+      const openEntriesCount = state.entries.filter(entry => entry.status !== "paid").length;
+      const total = openCustomers.reduce((sum, customer) => sum + customerTotal(customer.id), 0);
+      els.customerCount.textContent = money.format(openCustomers.length);
+      els.openTotal.textContent = `${money.format(total)} บาท`;
+      els.entryCount.textContent = money.format(openEntriesCount);
+    }
+
+    function renderCustomers() {
+      const customers = filteredCustomers();
+      if (!customers.length) {
+        const hasCustomers = state.customers.length > 0;
+        els.customerList.innerHTML = `<div class="empty">${hasCustomers ? "ไม่มีลูกค้าที่ตรงกับตัวกรอง" : "ยังไม่มีลูกค้า"}</div>`;
+        return;
+      }
+
+      els.customerList.innerHTML = customers.map(customer => `
+        <button class="customer ${customer.id === state.selectedCustomerId ? "active" : ""}" type="button" data-customer="${escapeHtml(customer.id)}">
+          <span>
+            <span class="customer-name">${escapeHtml(customer.name)}</span>
+            <span class="customer-meta">${money.format(customer.openCount)} รายการค้าง ${customer.note ? `· ${escapeHtml(customer.note)}` : ""}</span>
+          </span>
+          <span class="amount">${money.format(customer.total)} ฿</span>
+        </button>
+      `).join("");
+
+      els.customerList.querySelectorAll("[data-customer]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedCustomerId = button.dataset.customer;
+          render();
+        });
+      });
+    }
+
+    function renderLedger() {
+      const customer = selectedCustomer();
+      if (!customer) {
+        els.selectedName.textContent = "เลือกชื่อลูกค้า";
+        els.selectedNote.textContent = "";
+        els.selectedTotal.textContent = "0 บาท";
+        els.payCustomerBtn.disabled = true;
+        els.deleteCustomerEntriesBtn.disabled = true;
+        els.entryRows.innerHTML = `<tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>`;
+        return;
+      }
+
+      const total = customerTotal(customer.id);
+      const allEntries = state.entries.filter(entry => entry.customerId === customer.id);
+      els.selectedName.textContent = customer.name;
+      els.selectedNote.textContent = customer.note || "";
+      els.selectedTotal.textContent = `${money.format(total)} บาท`;
+      els.payCustomerBtn.disabled = total <= 0;
+      els.deleteCustomerEntriesBtn.disabled = allEntries.length <= 0;
+
+      const rows = allEntries
+        .sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+
+      if (!rows.length) {
+        els.entryRows.innerHTML = `<tr><td colspan="5">ยังไม่มีรายการค้าง</td></tr>`;
+        return;
+      }
+
+      els.entryRows.innerHTML = rows.map(entry => `
+        <tr class="${entry.status === "paid" ? "paid-row" : ""}">
+          <td>${escapeHtml(formatDate(entry.date))}</td>
+          <td><span class="amount">${money.format(Number(entry.amount || 0))} ฿</span></td>
+          <td>${entry.status === "paid" ? `<span class="badge paid">จ่ายแล้ว</span>` : `<span class="badge">ค้าง</span>`}</td>
+          <td>
+            ${escapeHtml(entry.note || "-")}
+            ${entry.paidAt ? `<div class="muted">จ่ายเมื่อ ${escapeHtml(formatDate(entry.paidAt))}</div>` : ""}
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}">ลบ</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      els.entryRows.querySelectorAll("[data-delete]").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (!confirm("ลบรายการนี้ใช่ไหม?")) return;
+          await api("deleteEntry", { entryId: button.dataset.delete });
+          showMessage("ลบรายการแล้ว");
+          await loadData();
+        });
+      });
+    }
+
+    function render() {
+      renderStats();
+      renderCustomers();
+      renderLedger();
+    }
+
+    async function loadData() {
+      try {
+        const result = await api("list");
+        state.customers = Array.isArray(result.customers) ? result.customers : [];
+        state.entries = Array.isArray(result.entries) ? result.entries : [];
+        showMessage(`โหลดข้อมูลแล้ว: ลูกค้า ${money.format(state.customers.length)} คน`);
+        if (!state.selectedCustomerId && state.customers.length) {
+          const firstOpen = state.customers.find(customer => customerTotal(customer.id) > 0);
+          state.selectedCustomerId = firstOpen?.id || state.customers[0].id;
+        }
+        render();
+      } catch (error) {
+        console.error(error);
+        showMessage(error.message);
+      }
+    }
+
+    function openCustomerDialog(customer = {}) {
+      els.customerId.value = customer.id || "";
+      els.customerName.value = customer.name || "";
+      els.customerNote.value = customer.note || "";
+      els.customerDialog.showModal();
+      els.customerName.focus();
+    }
+
+    els.adminKey.addEventListener("change", () => {
+      saveSettings();
+      loadData();
+    });
+    els.reloadBtn.addEventListener("click", loadData);
+    els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
+    els.search.addEventListener("input", event => {
+      state.search = event.target.value;
+      renderCustomers();
+    });
+    els.customerFilter.addEventListener("change", event => {
+      state.customerFilter = event.target.value;
+      renderCustomers();
+    });
+
+    els.customerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const action = els.customerId.value ? "updateCustomer" : "addCustomer";
+      const result = await api(action, {
+        customer: {
+          id: els.customerId.value,
+          name: els.customerName.value.trim(),
+          note: els.customerNote.value.trim()
+        }
+      });
+      if (result.customer?.id) {
+        state.selectedCustomerId = result.customer.id;
+        if (action === "addCustomer") {
+          state.customers.push(result.customer);
+        } else {
+          state.customers = state.customers.map(customer => customer.id === result.customer.id ? { ...customer, ...result.customer } : customer);
+        }
+        state.customerFilter = "all";
+        els.customerFilter.value = "all";
+        render();
+      }
+      els.customerDialog.close();
+      showMessage("บันทึกลูกค้าแล้ว");
+      await loadData();
+    });
+
+    els.payCustomerBtn.addEventListener("click", async () => {
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const total = customerTotal(customer.id);
+      if (total <= 0) {
+        showMessage("ลูกค้าคนนี้ไม่มียอดค้าง");
+        return;
+      }
+      if (!confirm(`ปิดยอดรวมของ "${customer.name}" จำนวน ${money.format(total)} บาท ใช่ไหม?`)) return;
+      try {
+        await api("markCustomerPaid", { customerId: customer.id });
+        showMessage("ปิดยอดรวมแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`ปิดยอดรวมไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.deleteCustomerEntriesBtn.addEventListener("click", async () => {
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const count = state.entries.filter(entry => entry.customerId === customer.id).length;
+      if (!count) {
+        showMessage("ลูกค้าคนนี้ยังไม่มีรายการ");
+        return;
+      }
+      const text = `ลบรายการทั้งหมดของ "${customer.name}" จำนวน ${money.format(count)} รายการ ใช่ไหม?\nการลบนี้จะลบทั้งรายการค้างและรายการที่จ่ายแล้ว`;
+      if (!confirm(text)) return;
+      try {
+        await api("deleteCustomerEntries", { customerId: customer.id });
+        showMessage("ลบรายการทั้งหมดแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`ลบรายการทั้งหมดไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.entryForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const amount = Number(els.entryAmount.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("กรอกยอดเงินให้ถูกต้อง");
+        return;
+      }
+      try {
+        await api("addDebtSeparate", {
+          customerId: customer.id,
+          date: els.entryDate.value,
+          amount,
+          note: els.entryNote.value.trim()
+        });
+        els.entryAmount.value = "";
+        els.entryNote.value = "";
+        showMessage("เพิ่มยอดค้างแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`เพิ่มยอดไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.entryDate.value = todayText();
+    loadSettings();
+    render();
+    if (els.adminKey.value.trim()) {
+      loadData();
+    } else {
+      showMessage("กรอก admin key แล้วกดโหลดใหม่");
+    }
+  </script>
+</body>
+</html>

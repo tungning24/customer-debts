@@ -1,0 +1,5 @@
+-Apps Script Web App URL
+https://script.google.com/macros/s/AKfycbzJG-Q6o8xqzVS_XecbpCvXfGuw-B_vXBQDXSf2HPTgpi7GipNt9UYYzZAT8Wq3aj8K/exec
+
+-Admin key
+0850505014
