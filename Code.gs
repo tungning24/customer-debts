@@ -125,7 +125,7 @@ function listEntries() {
       note: row.note || "",
       createdAt: row.createdAt || "",
       updatedAt: row.updatedAt || "",
-      paidAt: row.paidAt || ""
+      paidAt: normalizeDate(row.paidAt)
     }));
 }
 
