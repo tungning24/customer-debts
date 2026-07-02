@@ -372,21 +372,6 @@
       border-radius: 8px;
     }
 
-    .ledger-section {
-      margin-top: 14px;
-    }
-
-    .ledger-section + .ledger-section {
-      margin-top: 18px;
-    }
-
-    .ledger-section h3 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 900;
-      color: #32445a;
-    }
-
     table {
       width: 100%;
       min-width: 720px;
@@ -419,40 +404,6 @@
       color: var(--paid);
       background: #f8fafc;
       text-decoration: line-through;
-    }
-
-    tr.day-row {
-      cursor: pointer;
-    }
-
-    tr.day-row:hover {
-      background: #f8fbff;
-    }
-
-    tr.detail-row[hidden] {
-      display: none;
-    }
-
-    tr.detail-row td {
-      background: #e8eef6;
-      border-bottom-color: #c9d6e4;
-    }
-
-    tr.detail-row:hover td {
-      background: #dfe8f3;
-    }
-
-    .detail-time {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-      white-space: nowrap;
-    }
-
-    .detail-status {
-      color: #32445a;
-      font-size: 13px;
-      font-weight: 800;
     }
 
     .row-actions {
@@ -700,12 +651,6 @@
         opacity: 0.72;
       }
 
-      tr.detail-row {
-        margin-top: -10px;
-        border-top: 0;
-        background: #f8fafc;
-      }
-
       td {
         display: grid;
         grid-template-columns: 88px 1fr;
@@ -868,44 +813,21 @@ if ('serviceWorker' in navigator) {
             <button class="btn primary" type="submit">เพิ่มยอด</button>
           </form>
 
-          <div class="ledger-section">
-            <h3>รายการค้าง</h3>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>วันที่</th>
-                    <th>ยอดรวม</th>
-                    <th>สถานะ</th>
-                    <th>หมายเหตุ</th>
-                    <th>จัดการ</th>
-                  </tr>
-                </thead>
-                <tbody id="openEntryRows">
-                  <tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="ledger-section">
-            <h3>รายการจ่ายแล้ว</h3>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>วันที่</th>
-                    <th>ยอดรวม</th>
-                    <th>สถานะ</th>
-                    <th>หมายเหตุ</th>
-                    <th>จัดการ</th>
-                  </tr>
-                </thead>
-                <tbody id="paidEntryRows">
-                  <tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>วันที่</th>
+                  <th>ยอด</th>
+                  <th>สถานะ</th>
+                  <th>หมายเหตุ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="entryRows">
+                <tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -966,8 +888,7 @@ if ('serviceWorker' in navigator) {
       entryDate: document.getElementById("entryDate"),
       entryAmount: document.getElementById("entryAmount"),
       entryNote: document.getElementById("entryNote"),
-      openEntryRows: document.getElementById("openEntryRows"),
-      paidEntryRows: document.getElementById("paidEntryRows"),
+      entryRows: document.getElementById("entryRows"),
       customerDialog: document.getElementById("customerDialog"),
       customerForm: document.getElementById("customerForm"),
       cancelCustomerBtn: document.getElementById("cancelCustomerBtn"),
@@ -996,13 +917,6 @@ if ('serviceWorker' in navigator) {
     function formatDate(value) {
       const date = new Date(`${value}T00:00:00`);
       return Number.isNaN(date.getTime()) ? value : dateFormat.format(date);
-    }
-
-    function formatEntryTime(entry) {
-      const value = entry.createdAt || entry.updatedAt || "";
-      const match = String(value).match(/(?:^|[ T])(\d{1,2}):(\d{2})(?::\d{2})?(?=$|\s|[.,Z+-])/);
-      if (!match) return "-";
-      return `${match[1].padStart(2, "0")}:${match[2]}`;
     }
 
     function showMessage(text) {
@@ -1158,92 +1072,6 @@ if ('serviceWorker' in navigator) {
       });
     }
 
-    function groupEntriesByDate(entries) {
-      return entries.reduce((groups, entry) => {
-        const date = entry.date || "";
-        let group = groups.find(item => item.date === date);
-        if (!group) {
-          group = { date, entries: [], total: 0 };
-          groups.push(group);
-        }
-        group.entries.push(entry);
-        group.total += Number(entry.amount || 0);
-        return groups;
-      }, []);
-    }
-
-    function renderEntryTable(tbody, entries, emptyText, statusLabel, isPaid) {
-      if (!entries.length) {
-        tbody.innerHTML = `<tr><td colspan="5">${escapeHtml(emptyText)}</td></tr>`;
-        return;
-      }
-
-      const groups = groupEntriesByDate(entries);
-      tbody.innerHTML = groups.map((group, index) => {
-        const rowId = `${isPaid ? "paid" : "open"}-${index}-${String(group.date).replace(/[^a-z0-9_-]/gi, "")}`;
-        const notes = [...new Set(group.entries.map(entry => String(entry.note || "").trim()).filter(Boolean))];
-        const noteText = notes.length ? notes.join(", ") : "-";
-        const detailRows = group.entries.map(entry => {
-          const detailStatus = entry.status === "paid" && entry.paidAt
-            ? `จ่ายเมื่อ ${escapeHtml(formatDate(entry.paidAt))}`
-            : statusLabel;
-
-          return `
-            <tr class="detail-row" data-detail="${escapeHtml(rowId)}" hidden>
-              <td><span class="detail-time">${escapeHtml(formatEntryTime(entry))}</span></td>
-              <td><span class="amount">${money.format(Number(entry.amount || 0))} ฿</span></td>
-              <td><span class="detail-status">${detailStatus}</span></td>
-              <td>${escapeHtml(entry.note || "-")}</td>
-              <td><button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}">ลบ</button></td>
-            </tr>
-          `;
-        }).join("");
-
-        return `
-          <tr class="day-row ${isPaid ? "paid-row" : ""}" data-toggle="${escapeHtml(rowId)}">
-            <td>${escapeHtml(formatDate(group.date))}</td>
-            <td><span class="amount">${money.format(group.total)} ฿</span></td>
-            <td><span class="badge ${isPaid ? "paid" : ""}">${statusLabel} ${money.format(group.entries.length)} รายการ</span></td>
-            <td>${escapeHtml(noteText)}</td>
-            <td><button class="btn small" type="button" data-toggle-button="${escapeHtml(rowId)}">ดูรายการ</button></td>
-          </tr>
-          ${detailRows}
-        `;
-      }).join("");
-    }
-
-    function bindLedgerEvents() {
-      document.querySelectorAll("[data-toggle]").forEach(row => {
-        row.addEventListener("click", event => {
-          if (event.target.closest("button")) return;
-          const details = document.querySelectorAll(`[data-detail="${row.dataset.toggle}"]`);
-          const nextHidden = !details[0]?.hidden;
-          details.forEach(detail => {
-            detail.hidden = nextHidden;
-          });
-        });
-      });
-
-      document.querySelectorAll("[data-toggle-button]").forEach(button => {
-        button.addEventListener("click", () => {
-          const details = document.querySelectorAll(`[data-detail="${button.dataset.toggleButton}"]`);
-          const nextHidden = !details[0]?.hidden;
-          details.forEach(detail => {
-            detail.hidden = nextHidden;
-          });
-        });
-      });
-
-      document.querySelectorAll("[data-delete]").forEach(button => {
-        button.addEventListener("click", async () => {
-          if (!confirm("ลบรายการนี้ใช่ไหม?")) return;
-          await api("deleteEntry", { entryId: button.dataset.delete });
-          showMessage("ลบรายการแล้ว");
-          await loadData();
-        });
-      });
-    }
-
     function renderLedger() {
       const customer = selectedCustomer();
       if (!customer) {
@@ -1252,8 +1080,7 @@ if ('serviceWorker' in navigator) {
         els.selectedTotal.textContent = "0 บาท";
         els.payCustomerBtn.disabled = true;
         els.deleteCustomerEntriesBtn.disabled = true;
-        els.openEntryRows.innerHTML = `<tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>`;
-        els.paidEntryRows.innerHTML = `<tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>`;
+        els.entryRows.innerHTML = `<tr><td colspan="5">เลือกชื่อลูกค้าก่อน</td></tr>`;
         return;
       }
 
@@ -1268,9 +1095,36 @@ if ('serviceWorker' in navigator) {
       const rows = allEntries
         .sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
 
-      renderEntryTable(els.openEntryRows, rows.filter(entry => entry.status !== "paid"), "ยังไม่มีรายการค้าง", "ค้าง", false);
-      renderEntryTable(els.paidEntryRows, rows.filter(entry => entry.status === "paid"), "ยังไม่มีรายการจ่ายแล้ว", "จ่ายแล้ว", true);
-      bindLedgerEvents();
+      if (!rows.length) {
+        els.entryRows.innerHTML = `<tr><td colspan="5">ยังไม่มีรายการค้าง</td></tr>`;
+        return;
+      }
+
+      els.entryRows.innerHTML = rows.map(entry => `
+        <tr class="${entry.status === "paid" ? "paid-row" : ""}">
+          <td>${escapeHtml(formatDate(entry.date))}</td>
+          <td><span class="amount">${money.format(Number(entry.amount || 0))} ฿</span></td>
+          <td>${entry.status === "paid" ? `<span class="badge paid">จ่ายแล้ว</span>` : `<span class="badge">ค้าง</span>`}</td>
+          <td>
+            ${escapeHtml(entry.note || "-")}
+            ${entry.paidAt ? `<div class="muted">จ่ายเมื่อ ${escapeHtml(formatDate(entry.paidAt))}</div>` : ""}
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}">ลบ</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      els.entryRows.querySelectorAll("[data-delete]").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (!confirm("ลบรายการนี้ใช่ไหม?")) return;
+          await api("deleteEntry", { entryId: button.dataset.delete });
+          showMessage("ลบรายการแล้ว");
+          await loadData();
+        });
+      });
     }
 
     function render() {
