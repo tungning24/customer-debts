@@ -1171,7 +1171,7 @@ if ('serviceWorker' in navigator) {
 
   <script>
     const STORE_KEY = "customer-debts-settings";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyVlJHcXxO77JFO_tb2oc1YOw5vdUrbLN2sdkjtvXFqt7YC5xOVuDgouqTKZ990yE5I/exec";
+    const WEB_APP_URL = "/api/debts";
 
     const state = {
       customers: [],
@@ -1289,8 +1289,7 @@ if ('serviceWorker' in navigator) {
       try {
         const response = await fetch(WEB_APP_URL, {
           method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action, adminKey, ...payload })
         });
         const text = await response.text();
@@ -1298,12 +1297,12 @@ if ('serviceWorker' in navigator) {
         try {
           result = JSON.parse(text);
         } catch {
-          throw new Error("Apps Script ไม่ได้ตอบกลับ JSON ตรวจ access เป็น Anyone และ deploy version ล่าสุด");
+          throw new Error("API ไม่ได้ตอบกลับ JSON ตรวจ Cloudflare Function และ environment variables");
         }
         if (!result.ok) {
           const detail = result.error === "unknown action"
-            ? "unknown action: ต้อง deploy Code.gs เวอร์ชันล่าสุด"
-            : result.error || "Apps Script error";
+            ? "unknown action: ต้อง deploy Cloudflare Function เวอร์ชันล่าสุด"
+            : result.error || "API error";
           throw new Error(detail);
         }
         return result;
