@@ -73,7 +73,7 @@
 
     .header-actions {
       display: grid;
-      grid-template-columns: minmax(160px, 220px) auto;
+      grid-template-columns: minmax(160px, 220px) auto auto;
       gap: 8px;
       align-items: end;
     }
@@ -165,6 +165,10 @@
       background: #fff;
       color: var(--text);
       font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
 
     .btn.primary {
@@ -723,12 +727,12 @@
       }
 
       .header-actions {
-        grid-template-columns: 1fr 92px;
+        grid-template-columns: 1fr 92px 78px;
         align-items: end;
       }
 
       .header-actions .btn {
-        min-width: 92px;
+        min-width: 0;
       }
 
       .stats {
@@ -1001,9 +1005,16 @@
 
     @media (max-width: 390px) {
       .customer-tools,
-      .header-actions,
       .ledger-actions {
         grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .header-actions label {
+        grid-column: 1 / -1;
       }
     }
   </style>
