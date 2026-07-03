@@ -1476,6 +1476,7 @@ if ('serviceWorker' in navigator) {
       const rowId = `${options.rowPrefix || (isPaid ? "paid" : "open")}-details`;
       const total = entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
       const summaryAmountClass = options.amountClass || (entries.length && entries.every(entry => entry.amountClass) ? entries[0].amountClass : "");
+      const summaryAmount = options.hideSummaryAmount ? "" : `<span class="amount ${summaryAmountClass}">${money.format(total)} ฿</span>`;
       let previousDate = "";
       const detailRows = entries.length ? entries.map(entry => {
         const itemDeleteAction = entry.deleteAction || deleteAction;
@@ -1505,7 +1506,7 @@ if ('serviceWorker' in navigator) {
       tbody.innerHTML = `
         <tr class="summary-row" data-toggle="${escapeHtml(rowId)}">
           <td><strong>${escapeHtml(statusLabel)}</strong></td>
-          <td><span class="amount ${summaryAmountClass}">${money.format(total)} ฿</span></td>
+          <td>${summaryAmount}</td>
           <td><span class="badge ${isPaid ? "paid" : ""}">${money.format(entries.length)} รายการ</span></td>
           <td><button class="detail-toggle" type="button" aria-expanded="false" aria-label="ดูรายละเอียด">+</button></td>
         </tr>
@@ -1598,7 +1599,7 @@ if ('serviceWorker' in navigator) {
 
       renderEntryTable(els.openPaymentRows, paymentRows, "ยังไม่มีรายการจ่ายไว้", "จ่ายไว้", false, "deletePayment", { amountClass: "credit", rowPrefix: "payment-open" });
       renderEntryTable(els.openEntryRows, rows, "ยังไม่มีรายการค้าง", "ค้าง", false, "deleteEntry", { rowPrefix: "debt-open" });
-      renderEntryTable(els.paidEntryRows, historyRows, "ยังไม่มีประวัติการจ่าย", "จ่ายแล้ว", true, "deleteEntry", { rowPrefix: "history" });
+      renderEntryTable(els.paidEntryRows, historyRows, "ยังไม่มีประวัติการจ่าย", "จ่ายแล้ว", true, "deleteEntry", { rowPrefix: "history", hideSummaryAmount: true });
     }
 
     function render() {
