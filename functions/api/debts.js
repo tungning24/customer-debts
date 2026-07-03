@@ -103,6 +103,8 @@ export async function onRequestPost({ request, env }) {
         return json({ ok: true, row: await adminUpdate(env, data.table, data.id, data.values || {}) });
       case "adminDelete":
         return json({ ok: true, row: await adminDelete(env, data.table, data.id) });
+      case "adminExport":
+        return json({ ok: true, tables: await adminExport(env) });
       default:
         return json({ ok: false, error: "unknown action" }, 400);
     }
@@ -361,6 +363,24 @@ async function adminDelete(env, table, idValue) {
   });
   if (!deleted.length) throw new Error("row not found");
   return deleted[0];
+}
+
+async function adminExport(env) {
+  const output = {};
+  for (const table of ["customers", "debt_entries", "payments"]) {
+    const config = getAdminTable(table);
+    output[table] = {
+      columns: Object.keys(config.columns),
+      rows: await supabase(env, table, {
+        query: {
+          select: "*",
+          order: config.order,
+          limit: "10000"
+        }
+      })
+    };
+  }
+  return output;
 }
 
 function getAdminTable(table) {
