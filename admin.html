@@ -273,6 +273,7 @@
         <input class="admin-key" id="adminKey" type="password" autocomplete="current-password">
       </label>
       <button id="loadBtn" class="primary" type="button">โหลดข้อมูล</button>
+      <button id="exportSqlBtn" type="button">Export SQL</button>
       <a href="./index.html"><button type="button">กลับหน้าใช้งาน</button></a>
     </div>
   </header>
@@ -309,6 +310,7 @@
     const els = {
       adminKey: document.getElementById("adminKey"),
       loadBtn: document.getElementById("loadBtn"),
+      exportSqlBtn: document.getElementById("exportSqlBtn"),
       tabs: document.getElementById("tabs"),
       tableLabel: document.getElementById("tableLabel"),
       rowCount: document.getElementById("rowCount"),
@@ -375,8 +377,9 @@
 
     function setBusy(value) {
       els.loadBtn.disabled = value;
+      els.exportSqlBtn.disabled = value;
       document.querySelectorAll("button").forEach(button => {
-        if (button.id !== "loadBtn") button.disabled = value;
+        if (button.id !== "loadBtn" && button.id !== "exportSqlBtn") button.disabled = value;
       });
     }
 
@@ -529,6 +532,90 @@
       }
     }
 
+    async function exportSql() {
+      try {
+        const result = await api("adminExport");
+        const sql = buildBackupSql(result.tables || {});
+        const now = new Date();
+        const timestamp = [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, "0"),
+          String(now.getDate()).padStart(2, "0"),
+          "-",
+          String(now.getHours()).padStart(2, "0"),
+          String(now.getMinutes()).padStart(2, "0")
+        ].join("");
+        downloadText(`customer-debts-backup-${timestamp}.sql`, sql);
+        showMessage("สร้างไฟล์ SQL แล้ว");
+      } catch (error) {
+        console.error(error);
+        showMessage(error.message);
+      }
+    }
+
+    function buildBackupSql(tables) {
+      const lines = [
+        "-- Customer Debts Supabase backup",
+        `-- Exported at ${new Date().toISOString()}`,
+        "begin;",
+        ""
+      ];
+
+      ["customers", "debt_entries", "payments"].forEach(table => {
+        const data = tables[table] || {};
+        const columns = data.columns || [];
+        const rows = data.rows || [];
+
+        lines.push(`-- ${table}: ${rows.length} rows`);
+        if (!columns.length || !rows.length) {
+          lines.push("");
+          return;
+        }
+
+        rows.forEach(row => {
+          const columnSql = columns.map(column => quoteIdent(column)).join(", ");
+          const valueSql = columns.map(column => sqlValue(row[column])).join(", ");
+          const updateSql = columns
+            .filter(column => column !== "id")
+            .map(column => `${quoteIdent(column)} = excluded.${quoteIdent(column)}`)
+            .join(", ");
+
+          lines.push(
+            `insert into public.${quoteIdent(table)} (${columnSql}) values (${valueSql}) ` +
+            `on conflict (id) do update set ${updateSql};`
+          );
+        });
+        lines.push("");
+      });
+
+      lines.push("commit;");
+      lines.push("");
+      return lines.join("\n");
+    }
+
+    function quoteIdent(value) {
+      return `"${String(value).replace(/"/g, '""')}"`;
+    }
+
+    function sqlValue(value) {
+      if (value === null || value === undefined) return "null";
+      if (typeof value === "boolean") return value ? "true" : "false";
+      if (typeof value === "number") return Number.isFinite(value) ? String(value) : "null";
+      return `'${String(value).replace(/'/g, "''")}'`;
+    }
+
+    function downloadText(filename, text) {
+      const blob = new Blob([text], { type: "application/sql;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
     els.tabs.addEventListener("click", event => {
       const button = event.target.closest("[data-table]");
       if (!button) return;
@@ -560,6 +647,7 @@
     });
 
     els.loadBtn.addEventListener("click", loadTable);
+    els.exportSqlBtn.addEventListener("click", exportSql);
     els.adminKey.addEventListener("change", saveSettings);
 
     loadSettings();
