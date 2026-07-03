@@ -736,9 +736,14 @@
       }
 
       .stats {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 6px;
         margin-bottom: 10px;
+      }
+
+      .stat:nth-child(1),
+      .stat:nth-child(3) {
+        display: none;
       }
 
       .stat {
