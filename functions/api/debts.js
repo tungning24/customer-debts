@@ -4,8 +4,57 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type"
 };
 
+const ADMIN_TABLES = {
+  customers: {
+    order: "sort_order.asc.nullslast,name.asc",
+    columns: {
+      id: "readonly",
+      name: "text",
+      note: "text",
+      sort_order: "integer",
+      active: "boolean",
+      created_at: "readonly",
+      updated_at: "readonly"
+    }
+  },
+  debt_entries: {
+    order: "date.desc,created_at.desc",
+    columns: {
+      id: "readonly",
+      customer_id: "uuid",
+      date: "date",
+      amount: "number",
+      status: "debt_status",
+      note: "text",
+      paid_at: "nullable_date",
+      created_at: "readonly",
+      updated_at: "readonly"
+    }
+  },
+  payments: {
+    order: "date.desc,created_at.desc",
+    columns: {
+      id: "readonly",
+      customer_id: "uuid",
+      date: "date",
+      amount: "number",
+      note: "text",
+      status: "payment_status",
+      created_at: "readonly",
+      updated_at: "readonly"
+    }
+  }
+};
+
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+export async function onRequestGet() {
+  return json({
+    ok: true,
+    message: "Customer debts API is ready. Use POST from index.html."
+  });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -48,6 +97,12 @@ export async function onRequestPost({ request, env }) {
         return json({ ok: true, count: await deleteCustomerEntries(env, data.customerId) });
       case "deleteCustomerPaidHistory":
         return json({ ok: true, count: await deleteCustomerPaidHistory(env, data.customerId) });
+      case "adminList":
+        return json({ ok: true, ...(await adminList(env, data.table)) });
+      case "adminUpdate":
+        return json({ ok: true, row: await adminUpdate(env, data.table, data.id, data.values || {}) });
+      case "adminDelete":
+        return json({ ok: true, row: await adminDelete(env, data.table, data.id) });
       default:
         return json({ ok: false, error: "unknown action" }, 400);
     }
@@ -252,6 +307,111 @@ async function deleteCustomerPaidHistory(env, customerId) {
     }
   });
   return deletedEntries.length + deletedPayments.length;
+}
+
+async function adminList(env, table) {
+  const config = getAdminTable(table);
+  const rows = await supabase(env, table, {
+    query: {
+      select: "*",
+      order: config.order,
+      limit: "500"
+    }
+  });
+
+  return {
+    table,
+    columns: Object.entries(config.columns).map(([name, type]) => ({ name, type })),
+    rows
+  };
+}
+
+async function adminUpdate(env, table, idValue, values) {
+  const config = getAdminTable(table);
+  const id = String(idValue || "").trim();
+  if (!id) throw new Error("row id is required");
+
+  const body = {};
+  for (const [column, value] of Object.entries(values)) {
+    const type = config.columns[column];
+    if (!type || type === "readonly") continue;
+    body[column] = normalizeAdminValue(value, type, column);
+  }
+
+  if (!Object.keys(body).length) throw new Error("no editable values");
+  if (config.columns.updated_at) body.updated_at = new Date().toISOString();
+
+  const updated = await supabase(env, table, {
+    method: "PATCH",
+    query: { id: `eq.${id}` },
+    body
+  });
+  if (!updated.length) throw new Error("row not found");
+  return updated[0];
+}
+
+async function adminDelete(env, table, idValue) {
+  getAdminTable(table);
+  const id = String(idValue || "").trim();
+  if (!id) throw new Error("row id is required");
+
+  const deleted = await supabase(env, table, {
+    method: "DELETE",
+    query: { id: `eq.${id}` }
+  });
+  if (!deleted.length) throw new Error("row not found");
+  return deleted[0];
+}
+
+function getAdminTable(table) {
+  const cleanTable = String(table || "").trim();
+  const config = ADMIN_TABLES[cleanTable];
+  if (!config) throw new Error("table is not allowed");
+  return config;
+}
+
+function normalizeAdminValue(value, type, column) {
+  if (type === "text" || type === "uuid") return String(value || "").trim();
+
+  if (type === "integer") {
+    if (value === "" || value === null || value === undefined) return null;
+    const number = Number(value);
+    if (!Number.isInteger(number)) throw new Error(`${column} must be an integer`);
+    return number;
+  }
+
+  if (type === "number") {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number <= 0) throw new Error(`${column} must be greater than zero`);
+    return number;
+  }
+
+  if (type === "boolean") {
+    return value === true || String(value).toLowerCase() === "true";
+  }
+
+  if (type === "date") {
+    const date = normalizeDate(value);
+    if (!date) throw new Error(`${column} is required`);
+    return date;
+  }
+
+  if (type === "nullable_date") {
+    const date = normalizeDate(value);
+    return date || null;
+  }
+
+  if (type === "debt_status") {
+    if (!["open", "paid"].includes(value)) throw new Error("invalid debt status");
+    return value;
+  }
+
+  if (type === "payment_status") {
+    if (!["open", "close"].includes(value)) throw new Error("invalid payment status");
+    return value;
+  }
+
+  throw new Error(`${column} is not editable`);
 }
 
 async function reconcileAllCustomerPaymentStatuses(env) {
