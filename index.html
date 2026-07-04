@@ -78,7 +78,6 @@
       align-items: end;
     }
 
-    .admin-toggle,
     .entry-toggle {
       display: none;
     }
@@ -740,18 +739,9 @@
         align-items: end;
       }
 
-      .admin-toggle,
       .entry-toggle {
         display: inline-flex;
         width: 100%;
-      }
-
-      .header-actions {
-        display: none;
-      }
-
-      .header-actions.open {
-        display: grid;
       }
 
       .header-actions .btn {
@@ -882,8 +872,7 @@
       }
 
       .btn.pay-all {
-        min-height: 38px;
-        font-size: 14px;
+        font-size: 17px;
       }
 
       .entry-form {
@@ -1103,7 +1092,6 @@ if ('serviceWorker' in navigator) {
         <h1>บัญชีลูกค้าค้างจ่าย</h1>
         <p class="subtitle">รุ่นทดลอง: แยกยอดหนี้กับยอดชำระ รองรับจ่ายบางส่วน</p>
       </div>
-      <button class="btn small admin-toggle" type="button" id="adminToggle" aria-expanded="false">+ admin</button>
       <div class="header-actions">
         <label>
           Admin key
@@ -1268,8 +1256,6 @@ if ('serviceWorker' in navigator) {
       customerCount: document.getElementById("customerCount"),
       openTotal: document.getElementById("openTotal"),
       entryCount: document.getElementById("entryCount"),
-      adminToggle: document.getElementById("adminToggle"),
-      headerActions: document.querySelector(".header-actions"),
       addCustomerBtn: document.getElementById("addCustomerBtn"),
       search: document.getElementById("search"),
       customerSelect: document.getElementById("customerSelect"),
@@ -1730,10 +1716,6 @@ if ('serviceWorker' in navigator) {
     els.adminKey.addEventListener("change", () => {
       saveSettings();
       loadData();
-    });
-    els.adminToggle.addEventListener("click", () => {
-      const open = els.headerActions.classList.toggle("open");
-      els.adminToggle.setAttribute("aria-expanded", String(open));
     });
     els.reloadBtn.addEventListener("click", loadData);
     els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
