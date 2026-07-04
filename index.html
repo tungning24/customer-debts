@@ -78,6 +78,11 @@
       align-items: end;
     }
 
+    .admin-toggle,
+    .entry-toggle {
+      display: none;
+    }
+
     .header-actions label {
       color: #dbeafe;
     }
@@ -735,6 +740,20 @@
         align-items: end;
       }
 
+      .admin-toggle,
+      .entry-toggle {
+        display: inline-flex;
+        width: 100%;
+      }
+
+      .header-actions {
+        display: none;
+      }
+
+      .header-actions.open {
+        display: grid;
+      }
+
       .header-actions .btn {
         min-width: 0;
       }
@@ -829,11 +848,11 @@
       }
 
       .selected-name {
-        font-size: 22px;
+        font-size: 20px;
       }
 
       .selected-total {
-        font-size: 32px;
+        font-size: 26px;
         line-height: 1.05;
       }
 
@@ -841,12 +860,18 @@
         position: sticky;
         top: 0;
         z-index: 5;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
         background: var(--panel);
         box-shadow: 0 8px 18px rgba(23, 32, 51, 0.08);
       }
 
+      .ledger-head .muted {
+        display: none;
+      }
+
       .ledger-actions {
-        margin-top: 8px;
+        margin-top: 4px;
       }
 
       .btn.delete-all,
@@ -857,14 +882,20 @@
       }
 
       .btn.pay-all {
-        font-size: 17px;
+        min-height: 38px;
+        font-size: 14px;
       }
 
       .entry-form {
+        display: none;
         margin-top: 10px;
         padding: 10px;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
+      }
+
+      .entry-form.open {
+        display: grid;
       }
 
       .entry-form label:nth-child(3),
@@ -1072,6 +1103,7 @@ if ('serviceWorker' in navigator) {
         <h1>บัญชีลูกค้าค้างจ่าย</h1>
         <p class="subtitle">รุ่นทดลอง: แยกยอดหนี้กับยอดชำระ รองรับจ่ายบางส่วน</p>
       </div>
+      <button class="btn small admin-toggle" type="button" id="adminToggle" aria-expanded="false">+ admin</button>
       <div class="header-actions">
         <label>
           Admin key
@@ -1141,6 +1173,7 @@ if ('serviceWorker' in navigator) {
         </div>
 
         <div class="panel-body">
+          <button class="btn entry-toggle" type="button" id="entryToggle" aria-expanded="false">+ เพิ่มรายการ</button>
           <form id="entryForm" class="entry-form">
             <label>
               วันที่
@@ -1235,6 +1268,8 @@ if ('serviceWorker' in navigator) {
       customerCount: document.getElementById("customerCount"),
       openTotal: document.getElementById("openTotal"),
       entryCount: document.getElementById("entryCount"),
+      adminToggle: document.getElementById("adminToggle"),
+      headerActions: document.querySelector(".header-actions"),
       addCustomerBtn: document.getElementById("addCustomerBtn"),
       search: document.getElementById("search"),
       customerSelect: document.getElementById("customerSelect"),
@@ -1246,6 +1281,7 @@ if ('serviceWorker' in navigator) {
       selectedTotal: document.getElementById("selectedTotal"),
       payCustomerBtn: document.getElementById("payCustomerBtn"),
       deletePaidHistoryBtn: document.getElementById("deletePaidHistoryBtn"),
+      entryToggle: document.getElementById("entryToggle"),
       entryForm: document.getElementById("entryForm"),
       entryDate: document.getElementById("entryDate"),
       entryAmount: document.getElementById("entryAmount"),
@@ -1695,6 +1731,10 @@ if ('serviceWorker' in navigator) {
       saveSettings();
       loadData();
     });
+    els.adminToggle.addEventListener("click", () => {
+      const open = els.headerActions.classList.toggle("open");
+      els.adminToggle.setAttribute("aria-expanded", String(open));
+    });
     els.reloadBtn.addEventListener("click", loadData);
     els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
     els.cancelCustomerBtn.addEventListener("click", () => els.customerDialog.close());
@@ -1713,6 +1753,10 @@ if ('serviceWorker' in navigator) {
     els.customerFilter.addEventListener("change", event => {
       state.customerFilter = event.target.value;
       render();
+    });
+    els.entryToggle.addEventListener("click", () => {
+      const open = els.entryForm.classList.toggle("open");
+      els.entryToggle.setAttribute("aria-expanded", String(open));
     });
 
     document.addEventListener("click", event => {
@@ -1844,6 +1888,8 @@ if ('serviceWorker' in navigator) {
         });
         els.entryAmount.value = "";
         els.entryNote.value = "";
+        els.entryForm.classList.remove("open");
+        els.entryToggle.setAttribute("aria-expanded", "false");
         showMessage("เพิ่มยอดค้างแล้ว");
         await loadData();
       } catch (error) {
