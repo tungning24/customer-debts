@@ -78,7 +78,7 @@
       align-items: end;
     }
 
-    .entry-toggle {
+    .entry-details-toggle {
       display: none;
     }
 
@@ -741,11 +741,6 @@
         align-items: end;
       }
 
-      .entry-toggle {
-        display: inline-flex;
-        width: 100%;
-      }
-
       .header-actions .btn {
         min-width: 0;
       }
@@ -888,25 +883,61 @@
       }
 
       .entry-form {
-        display: none;
         margin-top: 10px;
-        padding: 10px;
-        grid-template-columns: 1fr 1fr;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        grid-template-columns: minmax(0, 1fr) auto 48px;
         gap: 8px;
       }
 
-      .entry-form.open {
+      .entry-form label {
+        font-size: 0;
+      }
+
+      .entry-form input {
+        font-size: 16px;
+      }
+
+      .entry-form label:nth-child(1),
+      .entry-form label:nth-child(3) {
+        display: none;
+      }
+
+      .entry-form.details-open label:nth-child(1),
+      .entry-form.details-open label:nth-child(3) {
         display: grid;
       }
 
-      .entry-form label:nth-child(3),
-      .entry-form .btn {
-        grid-column: 1 / -1;
+      .entry-form label:nth-child(1) {
+        order: 4;
+        grid-column: 1;
       }
 
-      .entry-form .btn {
-        min-height: 52px;
+      .entry-form label:nth-child(2) {
+        order: 1;
+        grid-column: 1;
+      }
+
+      .entry-form label:nth-child(3) {
+        order: 5;
+        grid-column: 2 / -1;
+      }
+
+      .entry-form .btn.primary {
+        order: 2;
+        grid-column: 2;
+        min-height: 48px;
         font-size: 16px;
+      }
+
+      .entry-details-toggle {
+        order: 3;
+        display: inline-flex;
+        grid-column: 3;
+        min-height: 48px;
+        padding: 0;
+        font-size: 22px;
       }
 
       .ledger-section {
@@ -1173,7 +1204,6 @@ if ('serviceWorker' in navigator) {
         </div>
 
         <div class="panel-body">
-          <button class="btn entry-toggle" type="button" id="entryToggle" aria-expanded="false">+ เพิ่มรายการ</button>
           <form id="entryForm" class="entry-form">
             <label>
               วันที่
@@ -1188,6 +1218,7 @@ if ('serviceWorker' in navigator) {
               <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
             </label>
             <button class="btn primary" type="submit">เพิ่มยอด</button>
+            <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
           </form>
 
           <div class="ledger-section section-paid">
@@ -1279,7 +1310,7 @@ if ('serviceWorker' in navigator) {
       selectedTotal: document.getElementById("selectedTotal"),
       payCustomerBtn: document.getElementById("payCustomerBtn"),
       deletePaidHistoryBtn: document.getElementById("deletePaidHistoryBtn"),
-      entryToggle: document.getElementById("entryToggle"),
+      entryDetailsToggle: document.getElementById("entryDetailsToggle"),
       entryForm: document.getElementById("entryForm"),
       entryDate: document.getElementById("entryDate"),
       entryAmount: document.getElementById("entryAmount"),
@@ -1748,9 +1779,10 @@ if ('serviceWorker' in navigator) {
       state.customerFilter = event.target.value;
       render();
     });
-    els.entryToggle.addEventListener("click", () => {
-      const open = els.entryForm.classList.toggle("open");
-      els.entryToggle.setAttribute("aria-expanded", String(open));
+    els.entryDetailsToggle.addEventListener("click", () => {
+      const open = els.entryForm.classList.toggle("details-open");
+      els.entryDetailsToggle.textContent = open ? "-" : "+";
+      els.entryDetailsToggle.setAttribute("aria-expanded", String(open));
     });
 
     document.addEventListener("click", event => {
@@ -1882,8 +1914,9 @@ if ('serviceWorker' in navigator) {
         });
         els.entryAmount.value = "";
         els.entryNote.value = "";
-        els.entryForm.classList.remove("open");
-        els.entryToggle.setAttribute("aria-expanded", "false");
+        els.entryForm.classList.remove("details-open");
+        els.entryDetailsToggle.textContent = "+";
+        els.entryDetailsToggle.setAttribute("aria-expanded", "false");
         showMessage("เพิ่มยอดค้างแล้ว");
         await loadData();
       } catch (error) {
