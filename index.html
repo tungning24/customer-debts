@@ -1477,7 +1477,7 @@ if ('serviceWorker' in navigator) {
             <span class="customer-name">${escapeHtml(customer.name)}</span>
             <span class="customer-meta">${money.format(customer.openCount)} รายการค้าง ${customer.note ? `· ${escapeHtml(customer.note)}` : ""}</span>
           </span>
-          <span class="amount ${customer.total < 0 ? "credit" : ""}">${money.format(customer.total)} ฿</span>
+          <span class="amount ${customer.total < 0 ? "credit" : ""}">${customer.total < 0 ? "+" : ""}${money.format(Math.abs(customer.total))} ฿</span>
         </button>
       `).join("");
 
@@ -1602,7 +1602,7 @@ if ('serviceWorker' in navigator) {
         `ยอดหนี้ ${money.format(debtTotal)} บาท`,
         `จ่ายแล้ว ${money.format(paidTotal)} บาท`
       ].filter(Boolean).join(" | ");
-      els.selectedTotal.textContent = `${money.format(total)} บาท`;
+      els.selectedTotal.textContent = `${total < 0 ? "+" : ""}${money.format(Math.abs(total))} บาท`;
       els.selectedTotal.classList.toggle("credit", total < 0);
       els.payCustomerBtn.disabled = false;
       els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
