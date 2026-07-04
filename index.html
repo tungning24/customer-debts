@@ -1459,7 +1459,7 @@ if ('serviceWorker' in navigator) {
         `<option value="">เลือกลูกค้า</option>`,
         ...customers.map(customer => {
           const total = money.format(customer.total);
-          const label = `${customer.name} :: ${customer.total < 0 ? "+" : ""}${money.format(Math.abs(customer.total))} บาท`;
+          const label = `${customer.name} • ${customer.total < 0 ? "+" : ""}${money.format(Math.abs(customer.total))} บาท`;
           return `<option value="${escapeHtml(customer.id)}">${escapeHtml(label)}</option>`;
         })
       ].join("");
