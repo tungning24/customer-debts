@@ -894,7 +894,7 @@
         top: 0;
         z-index: 5;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
+        align-items: start;
         background: var(--panel);
         box-shadow: 0 8px 18px rgba(23, 32, 51, 0.08);
       }
@@ -916,8 +916,6 @@
       }
 
       .selected-total-label {
-        grid-column: 2;
-        justify-self: end;
         margin-top: 3px;
         color: var(--muted);
         font-size: 12px;
@@ -925,7 +923,9 @@
       }
 
       .ledger-head > div:last-child {
-        display: contents;
+        display: grid;
+        justify-items: end;
+        gap: 0;
       }
 
       .ledger-actions {
@@ -1788,11 +1788,7 @@ if ('serviceWorker' in navigator) {
       const historyEntries = [...historyDebtEntries, ...historyPaymentEntries];
 
       els.selectedName.textContent = customer.name;
-      els.selectedNote.textContent = [
-        customer.note || "",
-        `ยอดหนี้ ${money.format(debtTotal)} บาท`,
-        `จ่ายแล้ว ${money.format(paidTotal)} บาท`
-      ].filter(Boolean).join(" | ");
+      els.selectedNote.textContent = customer.note || "";
       els.selectedTotal.textContent = `${total < 0 ? "+" : ""}${money.format(Math.abs(total))} บาท`;
       els.selectedTotalLabel.textContent = total < 0 ? "ยอดที่ชำระไว้" : "ยอดที่ต้องชำระ";
       els.selectedTotal.classList.toggle("credit", total < 0);
