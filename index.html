@@ -71,6 +71,21 @@
       gap: 12px;
     }
 
+    .header-title {
+      min-width: 0;
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .header-actions-toggle {
+      display: none;
+    }
+
     .header-actions {
       display: grid;
       grid-template-columns: minmax(160px, 220px) auto auto;
@@ -366,6 +381,11 @@
 
     .selected-total.credit {
       color: #15803d;
+    }
+
+    .selected-total-label {
+      display: none;
+      text-align: right;
     }
 
     .entry-form {
@@ -736,9 +756,31 @@
         gap: 8px;
       }
 
+      .header-title-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: center;
+      }
+
+      .header-actions-toggle {
+        display: inline-flex;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0;
+        border-color: rgba(219, 234, 254, 0.42);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-size: 24px;
+        line-height: 1;
+      }
+
       .header-actions {
         grid-template-columns: 1fr 92px 78px;
         align-items: end;
+      }
+
+      .header-actions:not(.open) {
+        display: none;
       }
 
       .header-actions .btn {
@@ -859,6 +901,27 @@
 
       .ledger-head .muted {
         display: none;
+      }
+
+      .ledger-head #selectedNote,
+      .ledger-head .selected-total-label {
+        display: block;
+      }
+
+      .ledger-head #selectedNote {
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .selected-total-label {
+        grid-column: 2;
+        justify-self: end;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.25;
       }
 
       .ledger-head > div:last-child {
@@ -1150,8 +1213,11 @@ if ('serviceWorker' in navigator) {
 </script>
   <header>
     <div class="wrap topbar">
-      <div>
-        <h1>บัญชีลูกค้าค้างจ่าย</h1>
+      <div class="header-title">
+        <div class="header-title-row">
+          <h1>บัญชีลูกค้าค้างจ่าย</h1>
+          <button class="btn small header-actions-toggle" type="button" id="headerActionsToggle" aria-expanded="false" aria-label="เปิดเมนูจัดการ">+</button>
+        </div>
         <p class="subtitle">รุ่นทดลอง: แยกยอดหนี้กับยอดชำระ รองรับจ่ายบางส่วน</p>
       </div>
       <div class="header-actions">
@@ -1216,8 +1282,9 @@ if ('serviceWorker' in navigator) {
           <div>
             <div class="muted">ยอดค้าง</div>
             <div id="selectedTotal" class="selected-total">0 บาท</div>
+            <div id="selectedTotalLabel" class="selected-total-label">ยอดที่ต้องชำระ</div>
             <div class="ledger-actions">
-              <button class="btn pay-all" type="button" id="payCustomerBtn">รับชำระ</button>
+              <button class="btn pay-all" type="button" id="payCustomerBtn">จ่ายหนี้</button>
             </div>
           </div>
         </div>
@@ -1236,7 +1303,7 @@ if ('serviceWorker' in navigator) {
               หมายเหตุ
               <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
             </label>
-            <button class="btn primary" type="submit">เพิ่มยอด</button>
+            <button class="btn primary" type="submit">เพิ่มหนี้</button>
             <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
           </form>
 
@@ -1313,6 +1380,8 @@ if ('serviceWorker' in navigator) {
     };
 
     const els = {
+      headerActionsToggle: document.getElementById("headerActionsToggle"),
+      headerActions: document.querySelector(".header-actions"),
       adminKey: document.getElementById("adminKey"),
       reloadBtn: document.getElementById("reloadBtn"),
       customerCount: document.getElementById("customerCount"),
@@ -1327,6 +1396,7 @@ if ('serviceWorker' in navigator) {
       selectedName: document.getElementById("selectedName"),
       selectedNote: document.getElementById("selectedNote"),
       selectedTotal: document.getElementById("selectedTotal"),
+      selectedTotalLabel: document.getElementById("selectedTotalLabel"),
       payCustomerBtn: document.getElementById("payCustomerBtn"),
       deletePaidHistoryBtn: document.getElementById("deletePaidHistoryBtn"),
       entryDetailsToggle: document.getElementById("entryDetailsToggle"),
@@ -1680,6 +1750,7 @@ if ('serviceWorker' in navigator) {
         els.selectedName.textContent = "เลือกชื่อลูกค้า";
         els.selectedNote.textContent = "";
         els.selectedTotal.textContent = "0 บาท";
+        els.selectedTotalLabel.textContent = "ยอดที่ต้องชำระ";
         els.selectedTotal.classList.remove("credit");
         els.payCustomerBtn.disabled = true;
         els.deletePaidHistoryBtn.disabled = true;
@@ -1723,6 +1794,7 @@ if ('serviceWorker' in navigator) {
         `จ่ายแล้ว ${money.format(paidTotal)} บาท`
       ].filter(Boolean).join(" | ");
       els.selectedTotal.textContent = `${total < 0 ? "+" : ""}${money.format(Math.abs(total))} บาท`;
+      els.selectedTotalLabel.textContent = total < 0 ? "ยอดที่ชำระไว้" : "ยอดที่ต้องชำระ";
       els.selectedTotal.classList.toggle("credit", total < 0);
       els.payCustomerBtn.disabled = false;
       els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
@@ -1778,6 +1850,11 @@ if ('serviceWorker' in navigator) {
     els.adminKey.addEventListener("change", () => {
       saveSettings();
       loadData();
+    });
+    els.headerActionsToggle.addEventListener("click", () => {
+      const open = els.headerActions.classList.toggle("open");
+      els.headerActionsToggle.textContent = open ? "-" : "+";
+      els.headerActionsToggle.setAttribute("aria-expanded", String(open));
     });
     els.reloadBtn.addEventListener("click", loadData);
     els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
