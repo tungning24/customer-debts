@@ -887,15 +887,17 @@
         padding: 0;
         border: 0;
         background: transparent;
-        grid-template-columns: minmax(0, 1fr) auto 48px;
+        grid-template-columns: minmax(0, 1fr) 92px 48px;
         gap: 8px;
       }
 
       .entry-form label {
         font-size: 0;
+        min-width: 0;
       }
 
       .entry-form input {
+        min-width: 0;
         font-size: 16px;
       }
 
@@ -927,6 +929,7 @@
       .entry-form .btn.primary {
         order: 2;
         grid-column: 2;
+        width: 92px;
         min-height: 48px;
         font-size: 16px;
       }
