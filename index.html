@@ -224,16 +224,16 @@
     .btn.pay-all {
       width: 100%;
       min-height: 46px;
-      background: #dc2626;
-      border-color: #dc2626;
+      background: var(--accent); /* #dc2626 */
+      border-color: var(--accent);
       color: #fff;
       font-size: 16px;
       box-shadow: 0 10px 24px rgba(220, 38, 38, 0.24);
     }
 
     .btn.pay-all:hover {
-      background: #b91c1c;
-      border-color: #b91c1c;
+      background: var(--accent-dark); /* b91c1c */
+      border-color: var(--accent-dark);
     }
 
     .btn.pay-all:disabled {
@@ -1297,7 +1297,7 @@ if ('serviceWorker' in navigator) {
             <div id="selectedTotal" class="selected-total">0 บาท</div>
             <div id="selectedTotalLabel" class="selected-total-label">ยอดที่ต้องชำระ</div>
             <div class="ledger-actions">
-              <button class="btn primary" type="button" id="payCustomerBtn">จ่ายหนี้</button>
+              <button class="btn pay-all" type="button" id="payCustomerBtn">จ่ายหนี้</button>
             </div>
           </div>
         </div>
@@ -1316,7 +1316,7 @@ if ('serviceWorker' in navigator) {
               หมายเหตุ
               <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
             </label>
-            <button class="btn pay-all" type="submit">เพิ่มหนี้</button>
+            <button class="btn primary" type="submit">เพิ่มหนี้</button>
             <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
           </form>
 
