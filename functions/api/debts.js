@@ -495,10 +495,11 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
     }
 
     const openDebtAmount = debtAmount - remainingToApply;
+    const debtSplitNote = buildSplitNote(entry.note || "", debtAmount, "ซื้อ", entry.created_at || entry.updated_at || now);
     await supabase(env, "debt_entries", {
       method: "PATCH",
       query: { id: `eq.${entry.id}` },
-      body: { amount: remainingToApply, status: "paid", updated_at: now, paid_at: paidAt }
+      body: { amount: remainingToApply, status: "paid", note: debtSplitNote, updated_at: now, paid_at: paidAt }
     });
     await supabase(env, "debt_entries", {
       method: "POST",
@@ -507,7 +508,7 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
         date: normalizeDate(entry.date || paidAt),
         amount: openDebtAmount,
         status: "open",
-        note: entry.note || "",
+        note: debtSplitNote,
         created_at: now,
         updated_at: now
       }
@@ -532,10 +533,11 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
     }
 
     const creditAmount = paymentAmount - remainingToApply;
+    const paymentSplitNote = buildSplitNote(payment.note || "", paymentAmount, "จ่าย", payment.created_at || payment.updated_at || now);
     await supabase(env, "payments", {
       method: "PATCH",
       query: { id: `eq.${payment.id}` },
-      body: { amount: remainingToApply, status: "close", updated_at: now }
+      body: { amount: remainingToApply, status: "close", note: paymentSplitNote, updated_at: now }
     });
     await supabase(env, "payments", {
       method: "POST",
@@ -543,7 +545,7 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
         customer_id: cleanCustomerId,
         date: normalizeDate(payment.date || paidAt),
         amount: creditAmount,
-        note: payment.note || "",
+        note: paymentSplitNote,
         created_at: now,
         updated_at: now,
         status: "open"
@@ -611,6 +613,33 @@ function normalizeActive(value) {
 function normalizeDate(value) {
   if (!value) return "";
   return String(value).slice(0, 10);
+}
+
+function buildSplitNote(note, fullAmount, actionLabel, timestamp) {
+  const baseNote = String(note || "").trim();
+  const splitNote = `ยอดเต็ม ${formatAmount(fullAmount)} ${actionLabel}วันที่ ${formatThaiShortDateTime(timestamp)}`;
+  return baseNote ? `${baseNote} | ${splitNote}` : splitNote;
+}
+
+function formatAmount(value) {
+  const number = Number(value || 0);
+  return Number.isInteger(number) ? String(number) : String(Math.round(number * 100) / 100);
+}
+
+function formatThaiShortDateTime(value) {
+  const source = value ? new Date(value) : new Date();
+  const date = Number.isNaN(source.getTime()) ? new Date() : source;
+  const parts = new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    timeZone: "Asia/Bangkok",
+    day: "numeric",
+    month: "short",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(date);
+  const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${map.day} ${map.month} ${map.year} ${map.hour}:${map.minute}`;
 }
 
 function todayText() {
