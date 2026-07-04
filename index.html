@@ -199,6 +199,15 @@
     .btn.primary:hover {
       background: var(--accent-dark);
     }
+	
+	.add-debt-btn {
+      background: #dc2626;
+      border-color: #dc2626;
+	}
+	.add-debt-btn:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+	}
 
     .btn.danger {
       color: var(--danger);
@@ -1316,7 +1325,7 @@ if ('serviceWorker' in navigator) {
               หมายเหตุ
               <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
             </label>
-            <button class="btn primary" type="submit">เพิ่มหนี้</button>
+            <button class="btn primary add-debt-btn" type="submit">เพิ่มหนี้</button>
             <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
           </form>
 
