@@ -275,6 +275,10 @@
       display: none;
     }
 
+    .customer-picker {
+      display: none;
+    }
+
     .customer-search,
     .customer-filter {
       display: block;
@@ -790,16 +794,37 @@
       }
 
       .customer-select {
-        display: block;
+        display: none;
+      }
+
+      .customer-picker {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
         min-height: 54px;
-        border-color: var(--accent);
+        padding: 10px;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
         background: #ecfdf5;
         color: var(--accent-dark);
+        text-align: left;
         font-weight: 900;
         box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
       }
 
       .customer-list {
+        display: none;
+        max-height: 260px;
+        padding-top: 0;
+      }
+
+      .customer-list.open {
+        display: grid;
+      }
+
+      .customer-meta {
         display: none;
       }
 
@@ -1085,6 +1110,10 @@ if ('serviceWorker' in navigator) {
           <select id="customerSelect" class="customer-select">
             <option value="">เลือกลูกค้า</option>
           </select>
+          <button id="customerPicker" class="customer-picker" type="button" aria-expanded="false">
+            <span>เลือกลูกค้า</span>
+            <span></span>
+          </button>
           <select id="customerFilter" class="customer-filter">
             <option value="all">ทั้งหมด</option>
             <option value="open">เฉพาะคนค้าง</option>
@@ -1209,6 +1238,7 @@ if ('serviceWorker' in navigator) {
       addCustomerBtn: document.getElementById("addCustomerBtn"),
       search: document.getElementById("search"),
       customerSelect: document.getElementById("customerSelect"),
+      customerPicker: document.getElementById("customerPicker"),
       customerFilter: document.getElementById("customerFilter"),
       customerList: document.getElementById("customerList"),
       selectedName: document.getElementById("selectedName"),
@@ -1464,6 +1494,10 @@ if ('serviceWorker' in navigator) {
         })
       ].join("");
       els.customerSelect.value = customers.some(customer => customer.id === state.selectedCustomerId) ? state.selectedCustomerId : "";
+      const selected = customers.find(customer => customer.id === state.selectedCustomerId);
+      els.customerPicker.innerHTML = selected
+        ? `<span>${escapeHtml(selected.name)}</span><span class="amount ${selected.total < 0 ? "credit" : ""}">${selected.total < 0 ? "+" : ""}${money.format(Math.abs(selected.total))} ฿</span>`
+        : `<span>เลือกลูกค้า</span><span></span>`;
 
       if (!customers.length) {
         const hasCustomers = state.customers.some(isActiveCustomer);
@@ -1484,6 +1518,8 @@ if ('serviceWorker' in navigator) {
       els.customerList.querySelectorAll("[data-customer]").forEach(button => {
         button.addEventListener("click", () => {
           state.selectedCustomerId = button.dataset.customer;
+          els.customerList.classList.remove("open");
+          els.customerPicker.setAttribute("aria-expanded", "false");
           render();
         });
       });
@@ -1670,12 +1706,21 @@ if ('serviceWorker' in navigator) {
       state.selectedCustomerId = event.target.value;
       render();
     });
+    els.customerPicker.addEventListener("click", () => {
+      const open = els.customerList.classList.toggle("open");
+      els.customerPicker.setAttribute("aria-expanded", String(open));
+    });
     els.customerFilter.addEventListener("change", event => {
       state.customerFilter = event.target.value;
       render();
     });
 
     document.addEventListener("click", event => {
+      if (!event.target.closest("#customerPicker, #customerList")) {
+        els.customerList.classList.remove("open");
+        els.customerPicker.setAttribute("aria-expanded", "false");
+      }
+
       const noteButton = event.target.closest("[data-note]");
       if (noteButton) {
         showMessage(noteButton.dataset.note || "");
