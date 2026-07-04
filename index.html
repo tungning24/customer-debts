@@ -1499,7 +1499,7 @@ if ('serviceWorker' in navigator) {
       }
     }
 
-    function getCustomerMetric(customerId)  {
+    function getCustomerMetric(customerId) {
       return customerMetrics.get(customerId) || {
         debts: [],
         openPayments: [],
@@ -1634,7 +1634,7 @@ if ('serviceWorker' in navigator) {
               ${note ? `<button class="note-tip" type="button" title="${escapeHtml(note)}" data-note="${escapeHtml(note)}" aria-label="หมายเหตุ">📝</button>` : ""}
               ${detailStatus ? `<span class="detail-status">${detailStatus}</span>` : ""}
             </td>
-            <td class="entry-delete"><button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}" data-delete-action="${escapeHtml(itemDeleteAction)}">ลบ</button></td>
+            <td class="entry-delete" colspan="2"><button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}" data-delete-action="${escapeHtml(itemDeleteAction)}">ลบ</button></td>
           </tr>
         `;
       }).join("")
