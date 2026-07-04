@@ -881,6 +881,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        grid-column: 1;
+        grid-row: 1;
       }
 
       .selected-total {
@@ -906,12 +908,18 @@
         display: none;
       }
 
+      .ledger-title {
+        display: contents;
+      }
+
       .ledger-head #selectedNote,
       .ledger-head .selected-total-label {
         display: block;
       }
 
       .ledger-head #selectedNote {
+        grid-column: 1;
+        grid-row: 2;
         margin-top: 2px;
         overflow: hidden;
         text-overflow: ellipsis;
