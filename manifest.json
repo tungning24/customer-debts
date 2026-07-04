@@ -1,9 +1,9 @@
 {
-  "id": "/customer-debts/",
+  "id": "/",
   "name": "customer-debts",
   "short_name": "บัญชีค้าง",
-  "start_url": "/customer-debts/",
-  "scope": "/customer-debts/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#102a43",
   "theme_color": "#102a43",
