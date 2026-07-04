@@ -234,6 +234,8 @@
       grid-template-columns: 1fr;
       gap: 8px;
       margin-top: 10px;
+      width: 160px;
+      margin-left: auto;
     }
 
     .btn.small {
@@ -839,11 +841,15 @@
 
       .selected-name {
         font-size: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .selected-total {
         font-size: 26px;
         line-height: 1.05;
+        text-align: right;
       }
 
       .ledger-head {
@@ -860,7 +866,13 @@
         display: none;
       }
 
+      .ledger-head > div:last-child {
+        display: contents;
+      }
+
       .ledger-actions {
+        grid-column: 1 / -1;
+        width: 100%;
         margin-top: 4px;
       }
 
