@@ -1501,6 +1501,11 @@ if ('serviceWorker' in navigator) {
       return `${match[1].padStart(2, "0")}:${match[2]}`;
     }
 
+    function formatTimestamp(value) {
+      const parsedDate = new Date(value || "");
+      return Number.isNaN(parsedDate.getTime()) ? "-" : `${shortDateFormat.format(parsedDate)} ${timeFormat.format(parsedDate)}`;
+    }
+
     function showMessage(text) {
       els.message.textContent = text;
       els.message.classList.add("show");
@@ -1728,6 +1733,7 @@ if ('serviceWorker' in navigator) {
 
     function renderEntryTable(tbody, entries, emptyText, statusLabel, isPaid, deleteAction = "deleteEntry", options = {}) {
       const rowId = `${options.rowPrefix || (isPaid ? "paid" : "open")}-details`;
+      const isHistory = options.rowPrefix === "history";
       const total = entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
       const summaryAmountClass = options.amountClass || (entries.length && entries.every(entry => entry.amountClass) ? entries[0].amountClass : "");
       const summaryAmount = options.hideSummaryAmount ? "" : `<span class="amount ${summaryAmountClass}">${money.format(total)} ฿</span>`;
@@ -1735,16 +1741,17 @@ if ('serviceWorker' in navigator) {
       const detailRows = entries.length ? entries.map(entry => {
         const itemDeleteAction = entry.deleteAction || deleteAction;
         const amountClass = entry.amountClass || options.amountClass || "";
-        const detailStatus = isPaid && entry.paidAt ? escapeHtml(formatShortDate(entry.paidAt)) : "";
+        const detailStatus = isHistory ? escapeHtml(formatTimestamp(entry.createdAt)) : (isPaid && entry.paidAt ? escapeHtml(formatShortDate(entry.paidAt)) : "");
         const note = String(entry.note || "").trim();
-        const dateText = entry.date === previousDate ? "" : formatShortDate(entry.date);
-        previousDate = entry.date || previousDate;
+        const dateValue = isHistory ? entry.updatedAt : entry.date;
+        const dateText = dateValue === previousDate ? "" : (isHistory ? formatTimestamp(dateValue) : formatShortDate(dateValue));
+        previousDate = dateValue || previousDate;
 
         return `
           <tr class="detail-row ledger-entry ${isPaid ? "paid-row" : ""}" data-detail="${escapeHtml(rowId)}" hidden>
             <td class="entry-date">
               <span class="date-text">${escapeHtml(dateText)}</span>
-              <span class="detail-time">${escapeHtml(formatEntryTime(entry))}</span>
+              ${isHistory ? "" : `<span class="detail-time">${escapeHtml(formatEntryTime(entry))}</span>`}
             </td>
             <td class="entry-amount">
               <span class="amount ${amountClass}">${money.format(Number(entry.amount || 0))} ฿</span>
@@ -1826,10 +1833,12 @@ if ('serviceWorker' in navigator) {
         ...payment,
         paidAt: payment.date,
         deleteAction: "deletePayment",
+        historyType: "payment",
         amountClass: "credit"
       }));
       const historyDebtEntries = paidDebts.map(entry => ({
         ...entry,
+        historyType: "debt",
         deleteAction: "deleteEntry"
       }));
       const historyEntries = [...historyDebtEntries, ...historyPaymentEntries];
@@ -1847,7 +1856,7 @@ if ('serviceWorker' in navigator) {
       const paymentRows = paymentEntries
         .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
       const historyRows = historyEntries
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
+        .sort((a, b) => String(a.updatedAt || "").localeCompare(String(b.updatedAt || "")) || String(a.historyType).localeCompare(String(b.historyType)) || String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
 
       renderEntryTable(els.openPaymentRows, paymentRows, "ยังไม่มีรายการจ่ายไว้", "จ่ายไว้", false, "deletePayment", { amountClass: "credit", rowPrefix: "payment-open" });
       renderEntryTable(els.openEntryRows, rows, "ยังไม่มีรายการค้าง", "ค้าง", false, "deleteEntry", { rowPrefix: "debt-open" });
