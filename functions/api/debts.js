@@ -509,7 +509,7 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
         amount: openDebtAmount,
         status: "open",
         note: debtSplitNote,
-        created_at: now,
+        created_at: entry.created_at || now,
         updated_at: now
       }
     });
@@ -546,7 +546,7 @@ async function reconcileCustomerPaymentStatus(env, customerId) {
         date: normalizeDate(payment.date || paidAt),
         amount: creditAmount,
         note: paymentSplitNote,
-        created_at: now,
+        created_at: payment.created_at || now,
         updated_at: now,
         status: "open"
       }
