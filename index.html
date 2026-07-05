@@ -1843,11 +1843,11 @@ if ('serviceWorker' in navigator) {
       els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
 
       const rows = debts
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.updatedAt || "").localeCompare(String(b.updatedAt || "")));
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
       const paymentRows = paymentEntries
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.updatedAt || "").localeCompare(String(b.updatedAt || "")));
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
       const historyRows = historyEntries
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.updatedAt || "").localeCompare(String(b.updatedAt || "")));
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
 
       renderEntryTable(els.openPaymentRows, paymentRows, "ยังไม่มีรายการจ่ายไว้", "จ่ายไว้", false, "deletePayment", { amountClass: "credit", rowPrefix: "payment-open" });
       renderEntryTable(els.openEntryRows, rows, "ยังไม่มีรายการค้าง", "ค้าง", false, "deleteEntry", { rowPrefix: "debt-open" });
