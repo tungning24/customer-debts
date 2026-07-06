@@ -433,10 +433,35 @@
       font-weight: 900;
     }
 
+    .ledger-tab[data-ledger-tab="paid"] {
+      border-color: #22c55e;
+      color: #15803d;
+    }
+
+    .ledger-tab[data-ledger-tab="open"] {
+      border-color: #ef4444;
+      color: #b42318;
+    }
+
+    .ledger-tab[data-ledger-tab="history"] {
+      border-color: #3b82f6;
+      color: #1d4ed8;
+    }
+
     .ledger-tab.active {
-      background: #102a43;
-      border-color: #102a43;
       color: #fff;
+    }
+
+    .ledger-tab[data-ledger-tab="paid"].active {
+      background: #22c55e;
+    }
+
+    .ledger-tab[data-ledger-tab="open"].active {
+      background: #ef4444;
+    }
+
+    .ledger-tab[data-ledger-tab="history"].active {
+      background: #3b82f6;
     }
 
     .ledger-panel .table-wrap {
@@ -502,16 +527,11 @@
       font-weight: 900;
     }
 
-    .section-history {
-      position: relative;
-    }
-
     .section-history .ledger-section-head {
-      position: absolute;
-      top: 8px;
-      right: 52px;
-      z-index: 3;
-      display: block;
+      justify-content: flex-end;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #eff6ff;
     }
 
     .section-history .btn.delete-all {
@@ -521,11 +541,6 @@
       border-radius: 8px;
       font-size: 12px;
       box-shadow: none;
-    }
-
-    .section-history .summary-row td:nth-child(3) {
-      width: 210px;
-      padding-right: 128px;
     }
 
     .ledger-entry td {
@@ -1106,6 +1121,11 @@
         margin-top: 8px;
       }
 
+      .ledger-panel .table-wrap {
+        max-height: min(50vh, 480px);
+        overflow: auto;
+      }
+
       tr.paid-row {
         text-decoration: none;
         opacity: 0.72;
@@ -1150,20 +1170,10 @@
         width: 40px;
       }
 
-      .section-history .ledger-section-head {
-        top: 8px;
-        right: 44px;
-      }
-
       .section-history .btn.delete-all {
         min-height: 30px;
         padding: 0 6px;
         font-size: 11px;
-      }
-
-      .section-history .summary-row td:nth-child(3) {
-        width: 52px;
-        padding-right: 76px;
       }
 
       .ledger-section td::before {
@@ -1807,6 +1817,7 @@ if ('serviceWorker' in navigator) {
         els.selectedTotal.classList.remove("credit");
         els.payCustomerBtn.disabled = true;
         els.deletePaidHistoryBtn.disabled = true;
+        els.deletePaidHistoryBtn.closest(".ledger-section-head").hidden = true;
         els.openPaymentRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
         els.openEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
         els.paidEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
@@ -1849,6 +1860,7 @@ if ('serviceWorker' in navigator) {
       els.selectedTotal.classList.toggle("credit", total < 0);
       els.payCustomerBtn.disabled = false;
       els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
+      els.deletePaidHistoryBtn.closest(".ledger-section-head").hidden = historyEntries.length <= 0;
 
       const rows = debts
         .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
