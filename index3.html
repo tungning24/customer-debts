@@ -1,0 +1,2083 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#102a43">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<link class="icon" rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+  <title>บัญชีลูกค้าค้างจ่าย</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e1ec;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+      --danger: #b42318;
+      --paid: #667085;
+      --warn-bg: #fff7ed;
+      --shadow: 0 14px 34px rgba(23, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Tahoma, "Noto Sans Thai", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    header {
+      background: #102a43;
+      color: #fff;
+      padding: 18px 16px;
+    }
+
+    .wrap {
+      width: min(1240px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-title {
+      min-width: 0;
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .header-actions-toggle {
+      display: none;
+    }
+
+    .header-actions {
+      display: grid;
+      grid-template-columns: minmax(160px, 220px) auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    button.entry-details-toggle {
+      display: none;
+    }
+
+    .header-actions label {
+      color: #dbeafe;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 16px 0 36px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 11px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 74px;
+      padding-top: 9px;
+      resize: vertical;
+    }
+
+    .btn {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--accent-dark);
+    }
+	
+	.btn.primary.add-debt-btn {
+      background: #dc2626;
+      border-color: #dc2626;
+	}
+	.btn.primary.add-debt-btn:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+	}
+
+    .btn.danger {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .btn.delete-all {
+      width: 100%;
+      min-height: 40px;
+      background: #fff5f5;
+      border-color: #fca5a5;
+      color: var(--danger);
+    }
+
+    .btn.delete-all:disabled {
+      cursor: not-allowed;
+      background: #f8fafc;
+      border-color: var(--line);
+      color: #94a3b8;
+    }
+
+    .btn.pay-all {
+      width: 100%;
+      min-height: 46px;
+      background: var(--accent); /* #dc2626 */
+      border-color: var(--accent);
+      color: #fff;
+      font-size: 16px;
+	  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.24);
+      /* box-shadow: 0 10px 24px rgba(220, 38, 38, 0.24); */
+    }
+
+    .btn.pay-all:hover {
+      background: var(--accent-dark); /* b91c1c */
+      border-color: var(--accent-dark);
+    }
+
+    .btn.pay-all:disabled {
+      cursor: not-allowed;
+      background: #cbd5e1;
+      border-color: #cbd5e1;
+      color: #64748b;
+      box-shadow: none;
+    }
+
+    .ledger-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 10px;
+      width: 160px;
+      margin-left: auto;
+    }
+
+    .btn.small {
+      min-height: 38px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .stats {
+      display: none; /* grid or none  */
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .customer-tools {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .customer-select {
+      display: none;
+    }
+
+    .customer-picker {
+      display: none;
+    }
+
+    .customer-search,
+    .customer-filter {
+      display: block;
+    }
+
+    .customer-list {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      max-height: calc(100vh - 320px);
+      overflow: auto;
+    }
+
+    .customer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      min-height: 56px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .customer.active {
+      border-color: var(--accent);
+      background: #ecfdf5;
+    }
+
+    .customer-name {
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .customer-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .amount {
+      color: var(--danger);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .amount.credit {
+      color: #15803d;
+    }
+
+    .ledger-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .ledger-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .selected-name {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .selected-total {
+      color: var(--danger);
+      font-size: 26px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .selected-total.credit {
+      color: #15803d;
+    }
+
+    .selected-total-label {
+      display: none;
+      text-align: right;
+    }
+
+    .entry-form {
+      display: grid;
+      grid-template-columns: 150px 150px 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .ledger-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .ledger-tab {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 900;
+    }
+
+    .ledger-tab.active {
+      background: #102a43;
+      border-color: #102a43;
+      color: #fff;
+    }
+
+    .ledger-panel .table-wrap {
+      max-height: min(52vh, 520px);
+      overflow: auto;
+    }
+
+    .ledger-panel[hidden] {
+      display: none;
+    }
+
+    .ledger-section {
+      overflow: hidden;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .ledger-section + .ledger-section {
+      margin-top: 18px;
+    }
+
+    .ledger-section .table-wrap {
+      margin-top: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .section-paid {
+      border-color: #86efac;
+      box-shadow: inset 4px 0 0 #22c55e;
+    }
+
+    .section-open {
+      border-color: #fca5a5;
+      box-shadow: inset 4px 0 0 #ef4444;
+    }
+
+    .section-history {
+      border-color: #93c5fd;
+      box-shadow: inset 4px 0 0 #3b82f6;
+    }
+
+    .summary-row {
+      cursor: pointer;
+      background: #fbfdff;
+    }
+
+    .summary-row td {
+      border-bottom: 0;
+      vertical-align: middle;
+    }
+
+    .summary-row strong {
+      font-size: 15px;
+    }
+
+    .note-tip {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-weight: 900;
+    }
+
+    .section-history {
+      position: relative;
+    }
+
+    .section-history .ledger-section-head {
+      position: absolute;
+      top: 8px;
+      right: 52px;
+      z-index: 3;
+      display: block;
+    }
+
+    .section-history .btn.delete-all {
+      width: auto;
+      min-height: 32px;
+      padding: 0 9px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: none;
+    }
+
+    .section-history .summary-row td:nth-child(3) {
+      width: 210px;
+      padding-right: 128px;
+    }
+
+    .ledger-entry td {
+      background: #fff;
+    }
+
+    .entry-date {
+      width: 160px;
+    }
+
+    .date-text {
+      display: block;
+      font-weight: 900;
+      min-height: 20px;
+    }
+
+    .entry-amount {
+      min-width: 180px;
+    }
+
+    .entry-amount .amount {
+      margin-right: 4px;
+    }
+
+    .entry-amount .detail-status {
+      display: block;
+      margin-top: 3px;
+    }
+
+    .note-tip {
+      min-width: 26px;
+      min-height: 26px;
+      padding: 0;
+      border-radius: 999px;
+      background: #fff7ed;
+    }
+
+    .entry-delete {
+      width: 86px;
+      text-align: right;
+    }
+
+    .ledger-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .ledger-section-head .btn.delete-all {
+      width: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    .ledger-section table {
+      min-width: 0;
+      table-layout: fixed;
+    }
+
+    .ledger-section td:nth-child(1) {
+      width: 160px;
+    }
+
+    .ledger-section td:nth-child(3) {
+      width: 116px;
+      text-align: right;
+    }
+
+    .summary-row td:nth-child(4) {
+      width: 46px;
+      text-align: right;
+    }
+
+    td {
+      padding: 11px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tr.paid-row {
+      color: var(--paid);
+      background: #f8fafc;
+      text-decoration: line-through;
+    }
+
+    tr.detail-row[hidden] {
+      display: none;
+    }
+
+    tr.detail-row td {
+      background: #e8eef6;
+      border-bottom-color: #c9d6e4;
+    }
+
+    tr.detail-row:hover td {
+      background: #dfe8f3;
+    }
+
+    .detail-time {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .detail-status {
+      color: #32445a;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      background: var(--warn-bg);
+      color: #b45309;
+    }
+
+    .badge.paid {
+      background: #f1f5f9;
+      color: var(--paid);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    dialog {
+      width: min(420px, calc(100% - 28px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      box-shadow: var(--shadow);
+    }
+
+    dialog::backdrop {
+      background: rgba(16, 42, 67, 0.36);
+    }
+
+    .dialog-content {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .message {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      max-width: min(420px, calc(100% - 32px));
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #102a43;
+      color: #fff;
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      z-index: 20;
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 960px) {
+      header {
+        padding: 14px 12px;
+      }
+
+      .wrap {
+        width: min(100% - 20px, 1240px);
+      }
+
+      .layout,
+      .header-actions,
+      .stats,
+      .entry-form,
+      .ledger-actions,
+      .ledger-head {
+        grid-template-columns: 1fr;
+      }
+
+      .customer-list {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        background: #eef2f6;
+      }
+
+      input,
+      select,
+      textarea,
+      .btn {
+        min-height: 48px;
+        font-size: 16px;
+      }
+
+      h1 {
+        font-size: 21px;
+      }
+
+      .subtitle {
+        display: none;
+      }
+
+      main {
+        padding-top: 8px;
+        padding-bottom: 88px;
+      }
+
+      .topbar {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .header-title-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        align-items: center;
+      }
+
+      .header-actions-toggle {
+        display: inline-flex;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0;
+        border-color: rgba(219, 234, 254, 0.42);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .header-actions {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        z-index: 30;
+        grid-template-columns: 1fr 92px 78px;
+        align-items: end;
+        padding: 10px;
+        border: 1px solid rgba(219, 234, 254, 0.28);
+        border-radius: 8px;
+        background: #102a43;
+        box-shadow: 0 14px 34px rgba(16, 42, 67, 0.28);
+      }
+
+      .header-actions:not(.open) {
+        display: none;
+      }
+
+      .header-actions .btn {
+        min-width: 0;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .stat:nth-child(1),
+      .stat:nth-child(3) {
+        display: none;
+      }
+
+      .stat {
+        padding: 9px 10px;
+      }
+
+      .stat b {
+        font-size: 20px;
+      }
+
+      .stat:nth-child(2) {
+        grid-column: 1 / -1;
+        order: -1;
+      }
+
+      .panel {
+        border-radius: 8px;
+        box-shadow: 0 8px 18px rgba(23, 32, 51, 0.06);
+      }
+
+      .layout {
+        gap: 10px;
+      }
+
+      .panel-head,
+      .panel-body,
+      .customer-tools {
+        padding: 10px;
+      }
+
+      .panel-head {
+        align-items: stretch;
+      }
+
+      aside.panel {
+        position: relative;
+      }
+
+      .customer-tools {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding-top: 0;
+      }
+
+      .customer-search,
+      .customer-filter {
+        display: none;
+      }
+
+      .customer-select {
+        display: none;
+      }
+
+      .customer-picker {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        min-height: 54px;
+        padding: 10px;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        background: #ecfdf5;
+        color: var(--accent-dark);
+        text-align: left;
+        font-weight: 900;
+        box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
+      }
+
+      .customer-list {
+        display: none;
+        position: absolute;
+        top: 112px;
+        left: 10px;
+        right: 10px;
+        z-index: 25;
+        max-height: 260px;
+        overflow: auto;
+        padding: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(23, 32, 51, 0.16);
+      }
+
+      .customer-list.open {
+        display: grid;
+      }
+
+      .customer-meta {
+        display: none;
+      }
+
+      .selected-name {
+        font-size: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .selected-total {
+        font-size: 26px;
+        line-height: 1.05;
+        text-align: right;
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+      }
+
+      .ledger-head {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        background: var(--panel);
+        box-shadow: 0 8px 18px rgba(23, 32, 51, 0.08);
+      }
+
+      .ledger-head .muted {
+        display: none;
+      }
+
+      .ledger-title {
+        display: contents;
+      }
+
+      .ledger-head #selectedNote,
+      .ledger-head .selected-total-label {
+        display: block;
+      }
+
+      .ledger-head #selectedNote {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .selected-total-label {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      .ledger-head > div:last-child {
+        display: contents;
+      }
+
+      .ledger-actions {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        width: 100%;
+        margin-top: 4px;
+      }
+
+      .btn.delete-all,
+      .btn.pay-all {
+        min-height: 52px;
+        font-size: 14px;
+        padding: 0 8px;
+      }
+
+      .btn.pay-all {
+        font-size: 17px;
+      }
+
+      .entry-form {
+        position: relative;
+        margin-top: 10px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        grid-template-columns: minmax(0, 1fr) 92px 48px;
+        gap: 8px;
+      }
+
+      .entry-form label {
+        font-size: 0;
+        min-width: 0;
+      }
+
+      .entry-form input {
+        min-width: 0;
+        font-size: 16px;
+      }
+
+      .entry-form label:nth-child(1),
+      .entry-form label:nth-child(3) {
+        display: none;
+      }
+
+      .entry-form.details-open label:nth-child(1),
+      .entry-form.details-open label:nth-child(3) {
+        display: grid;
+        position: absolute;
+        top: calc(100% + 8px);
+        z-index: 12;
+        padding: 10px;
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: 0 14px 34px rgba(23, 32, 51, 0.14);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .entry-form label:nth-child(1) {
+        order: 4;
+        left: 0;
+        width: 150px;
+        border-radius: 8px 0 0 8px;
+      }
+
+      .entry-form label:nth-child(2) {
+        order: 1;
+        grid-column: 1;
+      }
+
+      .entry-form label:nth-child(3) {
+        order: 5;
+        left: 150px;
+        right: 0;
+        border-left: 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .entry-form .btn.primary {
+        order: 2;
+        grid-column: 2;
+        width: 92px;
+        min-height: 48px;
+        font-size: 16px;
+      }
+
+      button.entry-details-toggle {
+        order: 3;
+        display: inline-flex;
+        grid-column: 3;
+        min-height: 48px;
+        padding: 0;
+        font-size: 22px;
+      }
+
+      .ledger-section {
+        margin-top: 12px;
+      }
+
+      .ledger-section + .ledger-section {
+        margin-top: 14px;
+      }
+
+      .ledger-section-head {
+        align-items: stretch;
+      }
+
+      .ledger-section-head .btn.delete-all {
+        min-height: 40px;
+        white-space: nowrap;
+      }
+
+      .table-wrap {
+        border: 0;
+        overflow: visible;
+        margin-top: 8px;
+      }
+
+      tr.paid-row {
+        text-decoration: none;
+        opacity: 0.72;
+      }
+
+      .ledger-section table {
+        display: table;
+        width: 100%;
+      }
+
+      .ledger-section tbody {
+        display: table-row-group;
+      }
+
+      .ledger-section tr {
+        display: table-row;
+        margin-bottom: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .ledger-section td {
+        display: table-cell;
+        grid-template-columns: none;
+        min-height: 0;
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+        font-size: 13px;
+      }
+
+      .ledger-section td:nth-child(1) {
+        width: 88px;
+      }
+
+      .ledger-section td:nth-child(3) {
+        width: 52px;
+      }
+
+      .summary-row td:nth-child(4) {
+        width: 40px;
+      }
+
+      .section-history .ledger-section-head {
+        top: 8px;
+        right: 44px;
+      }
+
+      .section-history .btn.delete-all {
+        min-height: 30px;
+        padding: 0 6px;
+        font-size: 11px;
+      }
+
+      .section-history .summary-row td:nth-child(3) {
+        width: 52px;
+        padding-right: 76px;
+      }
+
+      .ledger-section td::before {
+        content: "";
+        display: none;
+      }
+
+      .summary-row strong {
+        font-size: 14px;
+      }
+
+      .summary-row .badge {
+        display: none;
+      }
+
+      .entry-date {
+        width: 88px;
+      }
+
+      .date-text,
+      .detail-time {
+        font-size: 12px;
+      }
+
+      .entry-amount {
+        width: auto;
+        min-width: 0;
+      }
+
+      .entry-amount .amount {
+        font-size: 15px;
+      }
+
+      .detail-status {
+        font-size: 11px;
+      }
+
+      .entry-delete {
+        width: 52px;
+      }
+
+      .entry-delete .btn {
+        min-height: 34px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .note-tip {
+        min-width: 24px;
+        min-height: 24px;
+      }
+
+      .row-actions .btn {
+        flex: 1;
+        min-height: 40px;
+      }
+
+      .message {
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        left: 10px;
+        max-width: none;
+      }
+
+      dialog {
+        width: calc(100% - 20px);
+      }
+    }
+
+    @media (max-width: 390px) {
+      .customer-tools,
+      .ledger-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .header-actions label {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+<body>
+<script>
+
+if ('serviceWorker' in navigator) {
+
+  window.addEventListener('load', () => {
+
+    navigator.serviceWorker
+      .register('./sw.js')
+      .then(() => console.log('SW Registered'))
+      .catch(err => console.log(err));
+
+  });
+
+}
+
+</script>
+  <header>
+    <div class="wrap topbar">
+      <div class="header-title">
+        <div class="header-title-row">
+          <h1>บัญชีลูกค้าค้างจ่าย</h1>
+          <button class="btn small header-actions-toggle" type="button" id="headerActionsToggle" aria-expanded="false" aria-label="เปิดเมนูจัดการ">+</button>
+        </div>
+        <p class="subtitle">รุ่นทดลอง: แยกยอดหนี้กับยอดชำระ รองรับจ่ายบางส่วน</p>
+      </div>
+      <div class="header-actions">
+        <label>
+          Admin key
+          <input id="adminKey" type="password" placeholder="รหัสแก้ไขข้อมูล" autocomplete="new-password">
+        </label>
+        <button class="btn small" type="button" id="reloadBtn">โหลดใหม่</button>
+        <a class="btn small" href="./admin.html">Admin</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="stats">
+      <div class="stat">
+        <b id="customerCount">0</b>
+        <span>คนที่ยังค้าง</span>
+      </div>
+      <div class="stat">
+        <b id="openTotal">0</b>
+        <span>ยอดค้างรวม</span>
+      </div>
+      <div class="stat">
+        <b id="entryCount">0</b>
+        <span>รายการที่ยังไม่จ่าย</span>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>รายชื่อลูกค้า</h2>
+          <button class="btn small" type="button" id="addCustomerBtn">เพิ่มคน</button>
+        </div>
+        <div class="customer-tools">
+          <input id="search" class="customer-search" type="search" placeholder="ค้นหาชื่อลูกค้า">
+          <select id="customerSelect" class="customer-select">
+            <option value="">เลือกลูกค้า</option>
+          </select>
+          <button id="customerPicker" class="customer-picker" type="button" aria-expanded="false">
+            <span>เลือกลูกค้า</span>
+            <span></span>
+          </button>
+          <select id="customerFilter" class="customer-filter">
+            <option value="all">ทั้งหมด</option>
+            <option value="open">เฉพาะคนค้าง</option>
+          </select>
+        </div>
+        <div id="customerList" class="customer-list">
+          <div class="empty">ยังไม่มีข้อมูล</div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head ledger-head">
+          <div class="ledger-title">
+            <div class="muted">หน้าลูกค้า</div>
+            <div id="selectedName" class="selected-name">เลือกชื่อลูกค้า</div>
+            <div id="selectedNote" class="muted"></div>
+          </div>
+          <div>
+            <div class="muted">ยอดค้าง</div>
+            <div id="selectedTotal" class="selected-total">0 บาท</div>
+            <div id="selectedTotalLabel" class="selected-total-label">ยอดที่ต้องชำระ</div>
+            <div class="ledger-actions">
+              <button class="btn pay-all" type="button" id="payCustomerBtn">จ่ายหนี้</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <form id="entryForm" class="entry-form">
+            <label>
+              วันที่
+              <input id="entryDate" type="date" required>
+            </label>
+            <label>
+              ยอดค้างเพิ่ม
+              <input id="entryAmount" type="number" min="0" step="0.01" required placeholder="เช่น 50">
+            </label>
+            <label>
+              หมายเหตุ
+              <input id="entryNote" placeholder="เช่น น้ำแข็ง ขนม ของชำ">
+            </label>
+            <button class="btn primary add-debt-btn" type="submit">เพิ่มหนี้</button>
+            <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
+          </form>
+
+          <div class="ledger-tabs" role="tablist" aria-label="รายการลูกค้า">
+            <button class="ledger-tab active" type="button" data-ledger-tab="paid">จ่าย</button>
+            <button class="ledger-tab" type="button" data-ledger-tab="open">ค้าง</button>
+            <button class="ledger-tab" type="button" data-ledger-tab="history">ประวัติ</button>
+          </div>
+
+          <div class="ledger-section section-paid ledger-panel" data-ledger-panel="paid">
+            <div class="table-wrap">
+              <table>
+                <tbody id="openPaymentRows">
+                  <tr><td colspan="4">เลือกลูกค้าก่อน</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ledger-section section-open ledger-panel" data-ledger-panel="open" hidden>
+            <div class="table-wrap">
+              <table>
+                <tbody id="openEntryRows">
+                  <tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ledger-section section-history ledger-panel" data-ledger-panel="history" hidden>
+            <div class="ledger-section-head">
+              <button class="btn delete-all small" type="button" id="deletePaidHistoryBtn">ลบทั้งหมด</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <tbody id="paidEntryRows">
+                  <tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="customerDialog">
+    <form method="dialog" class="dialog-content" id="customerForm">
+      <h2>เพิ่มลูกค้า</h2>
+      <input type="hidden" id="customerId">
+      <label>
+        ชื่อลูกค้า
+        <input id="customerName" required placeholder="เช่น ป้าสมใจ">
+      </label>
+      <label>
+        เบอร์/หมายเหตุ
+        <textarea id="customerNote" placeholder="บ้านเลขที่ เบอร์โทร หรือรายละเอียดสั้น ๆ"></textarea>
+      </label>
+      <div class="row-actions">
+        <button class="btn primary" value="save">บันทึก</button>
+        <button class="btn" type="button" id="cancelCustomerBtn">ยกเลิก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="message" class="message"></div>
+
+  <script>
+    const STORE_KEY = "customer-debts-settings";
+    const WEB_APP_URL = "/api/debts";
+
+    const state = {
+      customers: [],
+      entries: [],
+      payments: [],
+      selectedCustomerId: "",
+      search: "",
+      customerFilter: "all",
+      busy: false
+    };
+
+    const els = {
+      headerActionsToggle: document.getElementById("headerActionsToggle"),
+      headerActions: document.querySelector(".header-actions"),
+      adminKey: document.getElementById("adminKey"),
+      reloadBtn: document.getElementById("reloadBtn"),
+      customerCount: document.getElementById("customerCount"),
+      openTotal: document.getElementById("openTotal"),
+      entryCount: document.getElementById("entryCount"),
+      addCustomerBtn: document.getElementById("addCustomerBtn"),
+      search: document.getElementById("search"),
+      customerSelect: document.getElementById("customerSelect"),
+      customerPicker: document.getElementById("customerPicker"),
+      customerFilter: document.getElementById("customerFilter"),
+      customerList: document.getElementById("customerList"),
+      selectedName: document.getElementById("selectedName"),
+      selectedNote: document.getElementById("selectedNote"),
+      selectedTotal: document.getElementById("selectedTotal"),
+      selectedTotalLabel: document.getElementById("selectedTotalLabel"),
+      payCustomerBtn: document.getElementById("payCustomerBtn"),
+      deletePaidHistoryBtn: document.getElementById("deletePaidHistoryBtn"),
+      entryDetailsToggle: document.getElementById("entryDetailsToggle"),
+      entryForm: document.getElementById("entryForm"),
+      entryDate: document.getElementById("entryDate"),
+      entryAmount: document.getElementById("entryAmount"),
+      entryNote: document.getElementById("entryNote"),
+      ledgerTabs: document.querySelectorAll("[data-ledger-tab]"),
+      ledgerPanels: document.querySelectorAll("[data-ledger-panel]"),
+      openPaymentRows: document.getElementById("openPaymentRows"),
+      openEntryRows: document.getElementById("openEntryRows"),
+      paidEntryRows: document.getElementById("paidEntryRows"),
+      customerDialog: document.getElementById("customerDialog"),
+      customerForm: document.getElementById("customerForm"),
+      cancelCustomerBtn: document.getElementById("cancelCustomerBtn"),
+      customerId: document.getElementById("customerId"),
+      customerName: document.getElementById("customerName"),
+      customerNote: document.getElementById("customerNote"),
+      message: document.getElementById("message")
+    };
+
+    const money = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 2 });
+    const shortDateFormat = new Intl.DateTimeFormat("th-TH", { year: "2-digit", month: "short", day: "numeric" });
+    const timeFormat = new Intl.DateTimeFormat("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Bangkok" });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function todayText() {
+      const now = new Date();
+      const bangkok = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+      const year = bangkok.getFullYear();
+      const month = String(bangkok.getMonth() + 1).padStart(2, "0");
+      const day = String(bangkok.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatShortDate(value) {
+      const date = new Date(`${value}T00:00:00`);
+      return Number.isNaN(date.getTime()) ? value : shortDateFormat.format(date);
+    }
+
+    function formatEntryTime(entry) {
+      const value = entry.createdAt || entry.updatedAt || "";
+      const parsedDate = new Date(value);
+      if (!Number.isNaN(parsedDate.getTime())) {
+        return timeFormat.format(parsedDate);
+      }
+      const match = String(value).match(/(?:^|[ T])(\d{1,2}):(\d{2})(?::\d{2})?(?=$|\s|[.,Z+-])/);
+      if (!match) return "-";
+      return `${match[1].padStart(2, "0")}:${match[2]}`;
+    }
+
+    function formatTimestamp(value) {
+      const parsedDate = new Date(value || "");
+      return Number.isNaN(parsedDate.getTime()) ? "-" : `${shortDateFormat.format(parsedDate)} ${timeFormat.format(parsedDate)}`;
+    }
+
+    function showMessage(text) {
+      els.message.textContent = text;
+      els.message.classList.add("show");
+      window.clearTimeout(showMessage.timer);
+      showMessage.timer = window.setTimeout(() => els.message.classList.remove("show"), 2600);
+    }
+
+    function saveSettings(show = true) {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        adminKey: els.adminKey.value
+      }));
+      if (show) showMessage("บันทึก admin key แล้ว");
+    }
+
+    function loadSettings() {
+      try {
+        const settings = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+        els.adminKey.value = settings.adminKey || "";
+      } catch {
+        localStorage.removeItem(STORE_KEY);
+      }
+    }
+
+    async function api(action, payload = {}) {
+      if (state.busy) throw new Error("busy");
+      const adminKey = els.adminKey.value;
+      if (!adminKey) {
+        showMessage("กรอก admin key ก่อน");
+        throw new Error("กรอก admin key ก่อน");
+      }
+
+      state.busy = true;
+      saveSettings(false);
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, adminKey, ...payload })
+        });
+        const text = await response.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch {
+          throw new Error("API ไม่ได้ตอบกลับ JSON ตรวจ Cloudflare Function และ environment variables");
+        }
+        if (!result.ok) {
+          const detail = result.error === "unknown action"
+            ? "unknown action: ต้อง deploy Cloudflare Function เวอร์ชันล่าสุด"
+            : result.error || "API error";
+          throw new Error(detail);
+        }
+        return result;
+      } finally {
+        state.busy = false;
+      }
+    }
+
+    // --- Metrics Cache Storage ---
+    const customerMetrics = new Map();
+
+    function updateMetrics() {
+      customerMetrics.clear();
+      
+      // Initialize for all customers
+      state.customers.forEach(customer => {
+        customerMetrics.set(customer.id, {
+          debts: [],
+          openPayments: [],
+          closedPayments: [],
+          paidDebts: [],
+          debtTotal: 0,
+          paidTotal: 0,
+          total: 0
+        });
+      });
+
+      // Process entries
+      state.entries.forEach(entry => {
+        let m = customerMetrics.get(entry.customerId);
+        if (!m) {
+          m = { debts: [], openPayments: [], closedPayments: [], paidDebts: [], debtTotal: 0, paidTotal: 0, total: 0 };
+          customerMetrics.set(entry.customerId, m);
+        }
+        const amount = Number(entry.amount || 0);
+        if (entry.status === "paid") {
+          m.paidDebts.push(entry);
+        } else {
+          m.debts.push(entry);
+          m.debtTotal += amount;
+        }
+      });
+
+      // Process payments
+      state.payments.forEach(payment => {
+        let m = customerMetrics.get(payment.customerId);
+        if (!m) {
+          m = { debts: [], openPayments: [], closedPayments: [], paidDebts: [], debtTotal: 0, paidTotal: 0, total: 0 };
+          customerMetrics.set(payment.customerId, m);
+        }
+        const amount = Number(payment.amount || 0);
+        if (payment.status === "close") {
+          m.closedPayments.push(payment);
+        } else {
+          m.openPayments.push(payment);
+          m.paidTotal += amount;
+        }
+      });
+
+      // Compute total for each customer
+      for (let [customerId, m] of customerMetrics) {
+        m.total = m.debtTotal - m.paidTotal;
+      }
+    }
+
+    function getCustomerMetric(customerId) {
+      return customerMetrics.get(customerId) || {
+        debts: [],
+        openPayments: [],
+        closedPayments: [],
+        paidDebts: [],
+        debtTotal: 0,
+        paidTotal: 0,
+        total: 0
+      };
+    }
+
+    function selectedCustomer() {
+      return state.customers.find(customer => customer.id === state.selectedCustomerId);
+    }
+
+    function isActiveCustomer(customer) {
+      return customer.active !== false;
+    }
+
+    function normalizedSortOrder(customer) {
+      const sortOrder = Number(customer.sortOrder);
+      return Number.isFinite(sortOrder) && sortOrder > 0 ? sortOrder : Number.MAX_SAFE_INTEGER;
+    }
+
+    function nextCustomerSortOrder() {
+      return state.customers.reduce((max, customer) => {
+        const sortOrder = Number(customer.sortOrder);
+        return Number.isFinite(sortOrder) && sortOrder > max ? sortOrder : max;
+      }, 0) + 1;
+    }
+
+    function filteredCustomers() {
+      const text = state.search.trim().toLowerCase();
+      return state.customers
+        .filter(isActiveCustomer)
+        .map(customer => {
+          const metric = getCustomerMetric(customer.id);
+          return { ...customer, total: metric.total, openCount: metric.debts.length };
+        })
+        .filter(customer => state.customerFilter === "all" || customer.total > 0)
+        .filter(customer => !text || [customer.name, customer.note].join(" ").toLowerCase().includes(text))
+        .sort((a, b) => normalizedSortOrder(a) - normalizedSortOrder(b) || b.total - a.total || a.name.localeCompare(b.name, "th"));
+    }
+
+    function renderStats() {
+      const activeCustomerIds = new Set(state.customers.filter(isActiveCustomer).map(customer => customer.id));
+      
+      let openCustomersCount = 0;
+      let totalDebt = 0;
+      
+      state.customers.forEach(customer => {
+        if (isActiveCustomer(customer)) {
+          const total = getCustomerMetric(customer.id).total;
+          if (total > 0) {
+            openCustomersCount++;
+            totalDebt += total;
+          }
+        }
+      });
+
+      const openEntriesCount = state.entries.filter(entry => activeCustomerIds.has(entry.customerId) && entry.status !== "paid").length;
+      
+      els.customerCount.textContent = money.format(openCustomersCount);
+      els.openTotal.textContent = `${money.format(totalDebt)} บาท`;
+      els.entryCount.textContent = money.format(openEntriesCount);
+    }
+
+    function renderCustomers() {
+      const customers = filteredCustomers();
+      els.customerSelect.innerHTML = [
+        `<option value="">เลือกลูกค้า</option>`,
+        ...customers.map(customer => {
+          const total = money.format(customer.total);
+          const label = `${customer.name} • ${customer.total < 0 ? "+" : ""}${money.format(Math.abs(customer.total))} บาท`;
+          return `<option value="${escapeHtml(customer.id)}">${escapeHtml(label)}</option>`;
+        })
+      ].join("");
+      els.customerSelect.value = customers.some(customer => customer.id === state.selectedCustomerId) ? state.selectedCustomerId : "";
+      const selected = customers.find(customer => customer.id === state.selectedCustomerId);
+      els.customerPicker.innerHTML = selected
+        ? `<span>${escapeHtml(selected.name)}</span><span class="amount ${selected.total < 0 ? "credit" : ""}">${selected.total < 0 ? "+" : ""}${money.format(Math.abs(selected.total))} ฿</span>`
+        : `<span>เลือกลูกค้า</span><span></span>`;
+
+      if (!customers.length) {
+        const hasCustomers = state.customers.some(isActiveCustomer);
+        els.customerList.innerHTML = `<div class="empty">${hasCustomers ? "ไม่มีลูกค้าที่ตรงกับตัวกรอง" : "ยังไม่มีลูกค้า"}</div>`;
+        return;
+      }
+
+      els.customerList.innerHTML = customers.map(customer => `
+        <button class="customer ${customer.id === state.selectedCustomerId ? "active" : ""}" type="button" data-customer="${escapeHtml(customer.id)}">
+          <span>
+            <span class="customer-name">${escapeHtml(customer.name)}</span>
+            <span class="customer-meta">${money.format(customer.openCount)} รายการค้าง ${customer.note ? `· ${escapeHtml(customer.note)}` : ""}</span>
+          </span>
+          <span class="amount ${customer.total < 0 ? "credit" : ""}">${customer.total < 0 ? "+" : ""}${money.format(Math.abs(customer.total))} ฿</span>
+        </button>
+      `).join("");
+
+      els.customerList.querySelectorAll("[data-customer]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedCustomerId = button.dataset.customer;
+          els.customerList.classList.remove("open");
+          els.customerPicker.setAttribute("aria-expanded", "false");
+          render();
+        });
+      });
+    }
+
+    function renderEntryTable(tbody, entries, emptyText, statusLabel, isPaid, deleteAction = "deleteEntry", options = {}) {
+      const rowId = `${options.rowPrefix || (isPaid ? "paid" : "open")}-details`;
+      const isHistory = options.rowPrefix === "history";
+      let previousDate = "";
+      const detailRows = entries.length ? entries.map(entry => {
+        const itemDeleteAction = entry.deleteAction || deleteAction;
+        const amountClass = entry.amountClass || options.amountClass || "";
+        const detailStatus = isHistory ? escapeHtml(formatTimestamp(entry.createdAt)) : (isPaid && entry.paidAt ? escapeHtml(formatShortDate(entry.paidAt)) : "");
+        const note = String(entry.note || "").trim();
+        const dateValue = isHistory ? entry.updatedAt : entry.date;
+        const dateText = dateValue === previousDate ? "" : (isHistory ? formatTimestamp(dateValue) : formatShortDate(dateValue));
+        previousDate = dateValue || previousDate;
+
+        return `
+          <tr class="detail-row ledger-entry ${isPaid ? "paid-row" : ""}" data-detail="${escapeHtml(rowId)}">
+            <td class="entry-date">
+              <span class="date-text">${escapeHtml(dateText)}</span>
+              ${isHistory ? "" : `<span class="detail-time">${escapeHtml(formatEntryTime(entry))}</span>`}
+            </td>
+            <td class="entry-amount">
+              <span class="amount ${amountClass}">${money.format(Number(entry.amount || 0))} ฿</span>
+              ${note ? `<button class="note-tip" type="button" title="${escapeHtml(note)}" data-note="${escapeHtml(note)}" aria-label="หมายเหตุ">📝</button>` : ""}
+              ${detailStatus ? `<span class="detail-status">${detailStatus}</span>` : ""}
+            </td>
+            <td class="entry-delete" colspan="2"><button class="btn danger small" type="button" data-delete="${escapeHtml(entry.id)}" data-delete-action="${escapeHtml(itemDeleteAction)}">ลบ</button></td>
+          </tr>
+        `;
+      }).join("")
+        : `<tr class="detail-row" data-detail="${escapeHtml(rowId)}"><td colspan="4">${escapeHtml(emptyText)}</td></tr>`;
+
+      tbody.innerHTML = detailRows;
+    }
+    async function deleteLedgerItem(button) {
+      if (!confirm("ลบรายการนี้ใช่ไหม?")) return;
+      const action = button.dataset.deleteAction || "deleteEntry";
+      const payload = action === "deletePayment"
+        ? { paymentId: button.dataset.delete }
+        : { entryId: button.dataset.delete };
+      await api(action, payload);
+      showMessage("ลบรายการแล้ว");
+      await loadData();
+    }
+
+    function setLedgerTab(name) {
+      els.ledgerTabs.forEach(tab => tab.classList.toggle("active", tab.dataset.ledgerTab === name));
+      els.ledgerPanels.forEach(panel => {
+        panel.hidden = panel.dataset.ledgerPanel !== name;
+      });
+    }
+
+    function renderLedger() {
+      const customer = selectedCustomer();
+      if (!customer) {
+        els.selectedName.textContent = "เลือกชื่อลูกค้า";
+        els.selectedNote.textContent = "";
+        els.selectedTotal.textContent = "0 บาท";
+        els.selectedTotalLabel.textContent = "ยอดที่ต้องชำระ";
+        els.selectedTotal.classList.remove("credit");
+        els.payCustomerBtn.disabled = true;
+        els.deletePaidHistoryBtn.disabled = true;
+        els.openPaymentRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
+        els.openEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
+        els.paidEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
+        return;
+      }
+
+      // Compute debt and paid totals once
+      const metric = getCustomerMetric(customer.id);
+      const debtTotal = metric.debtTotal;
+      const paidTotal = metric.paidTotal;
+      const total = metric.total;
+
+      const debts = metric.debts;
+      const openPayments = metric.openPayments;
+      const closedPayments = metric.closedPayments;
+      const paidDebts = metric.paidDebts;
+      const paymentEntries = openPayments.map(payment => ({
+        ...payment,
+        paidAt: payment.date,
+        deleteAction: "deletePayment"
+      }));
+      const historyPaymentEntries = closedPayments.map(payment => ({
+        ...payment,
+        paidAt: payment.date,
+        deleteAction: "deletePayment",
+        historyType: "payment",
+        amountClass: "credit"
+      }));
+      const historyDebtEntries = paidDebts.map(entry => ({
+        ...entry,
+        historyType: "debt",
+        deleteAction: "deleteEntry"
+      }));
+      const historyEntries = [...historyDebtEntries, ...historyPaymentEntries];
+
+      els.selectedName.textContent = customer.name;
+      els.selectedNote.textContent = customer.note || "";
+      els.selectedTotal.textContent = `${total < 0 ? "+" : ""}${money.format(Math.abs(total))} บาท`;
+      els.selectedTotalLabel.textContent = total < 0 ? "ยอดที่ชำระไว้" : "ยอดที่ต้องชำระ";
+      els.selectedTotal.classList.toggle("credit", total < 0);
+      els.payCustomerBtn.disabled = false;
+      els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
+
+      const rows = debts
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
+      const paymentRows = paymentEntries
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
+      const historyRows = historyEntries
+        .sort((a, b) => String(a.updatedAt || "").localeCompare(String(b.updatedAt || "")) || String(a.historyType).localeCompare(String(b.historyType)) || String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+
+      renderEntryTable(els.openPaymentRows, paymentRows, "ยังไม่มีรายการจ่ายไว้", "จ่ายไว้", false, "deletePayment", { amountClass: "credit", rowPrefix: "payment-open" });
+      renderEntryTable(els.openEntryRows, rows, "ยังไม่มีรายการค้าง", "ค้าง", false, "deleteEntry", { rowPrefix: "debt-open" });
+      renderEntryTable(els.paidEntryRows, historyRows, "ยังไม่มีประวัติการจ่าย", "จ่ายแล้ว", true, "deleteEntry", { rowPrefix: "history", hideSummaryAmount: true });
+    }
+
+    function render() {
+      updateMetrics();
+      renderStats();
+      renderCustomers();
+      renderLedger();
+    }
+
+    async function loadData() {
+      try {
+        const result = await api("list");
+        state.customers = Array.isArray(result.customers) ? result.customers : [];
+        state.entries = Array.isArray(result.entries) ? result.entries : [];
+        state.payments = Array.isArray(result.payments) ? result.payments : [];
+        
+        updateMetrics();
+        const customers = filteredCustomers();
+        showMessage(`โหลดข้อมูลแล้ว: ลูกค้า ${money.format(customers.length)} คน`);
+        if (!customers.some(customer => customer.id === state.selectedCustomerId)) {
+          const firstOpen = customers.find(customer => customer.total > 0);
+          state.selectedCustomerId = firstOpen?.id || customers[0]?.id || "";
+        }
+        render();
+      } catch (error) {
+        console.error(error);
+        showMessage(error.message);
+      }
+    }
+
+    function openCustomerDialog(customer = {}) {
+      els.customerId.value = customer.id || "";
+      els.customerName.value = customer.name || "";
+      els.customerNote.value = customer.note || "";
+      els.customerDialog.showModal();
+      els.customerName.focus();
+    }
+
+    els.adminKey.addEventListener("change", () => {
+      saveSettings();
+      loadData();
+    });
+    els.headerActionsToggle.addEventListener("click", () => {
+      const open = els.headerActions.classList.toggle("open");
+      els.headerActionsToggle.textContent = open ? "-" : "+";
+      els.headerActionsToggle.setAttribute("aria-expanded", String(open));
+    });
+    els.reloadBtn.addEventListener("click", loadData);
+    els.addCustomerBtn.addEventListener("click", () => openCustomerDialog());
+    els.cancelCustomerBtn.addEventListener("click", () => els.customerDialog.close());
+    els.search.addEventListener("input", event => {
+      state.search = event.target.value;
+      render();
+    });
+    els.customerSelect.addEventListener("change", event => {
+      state.selectedCustomerId = event.target.value;
+      render();
+    });
+    els.customerPicker.addEventListener("click", () => {
+      const open = els.customerList.classList.toggle("open");
+      els.customerPicker.setAttribute("aria-expanded", String(open));
+    });
+    els.customerFilter.addEventListener("change", event => {
+      state.customerFilter = event.target.value;
+      render();
+    });
+    els.entryDetailsToggle.addEventListener("click", () => {
+      const open = els.entryForm.classList.toggle("details-open");
+      els.entryDetailsToggle.textContent = open ? "-" : "+";
+      els.entryDetailsToggle.setAttribute("aria-expanded", String(open));
+    });
+    els.ledgerTabs.forEach(tab => {
+      tab.addEventListener("click", () => setLedgerTab(tab.dataset.ledgerTab));
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest("#customerPicker, #customerList")) {
+        els.customerList.classList.remove("open");
+        els.customerPicker.setAttribute("aria-expanded", "false");
+      }
+
+      const noteButton = event.target.closest("[data-note]");
+      if (noteButton) {
+        showMessage(noteButton.dataset.note || "");
+        return;
+      }
+
+      const deleteButton = event.target.closest("[data-delete]");
+      if (deleteButton) {
+        deleteLedgerItem(deleteButton);
+        return;
+      }
+
+    });
+
+    els.customerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const action = els.customerId.value ? "updateCustomer" : "addCustomer";
+      const result = await api(action, {
+        customer: {
+          id: els.customerId.value,
+          name: els.customerName.value.trim(),
+          note: els.customerNote.value.trim(),
+          sortOrder: action === "addCustomer" ? nextCustomerSortOrder() : undefined,
+          active: action === "addCustomer" ? true : undefined
+        }
+      });
+      if (result.customer?.id) {
+        state.selectedCustomerId = result.customer.id;
+        state.customerFilter = "all";
+        els.customerFilter.value = "all";
+      }
+      els.customerDialog.close();
+      showMessage("บันทึกลูกค้าแล้ว");
+      await loadData();
+    });
+
+    els.payCustomerBtn.addEventListener("click", async () => {
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const total = getCustomerMetric(customer.id).total;
+      const paymentPrompt = total > 0
+        ? `ยอดค้างของ "${customer.name}" คือ ${money.format(total)} บาท\nกรอกยอดที่ลูกค้าจ่าย`
+        : total < 0
+          ? `"${customer.name}" มียอดจ่ายล่วงหน้าอยู่ ${money.format(Math.abs(total))} บาท\nกรอกยอดที่ลูกค้าจ่ายเพิ่ม`
+          : `"${customer.name}" ไม่มียอดค้าง\nกรอกยอดที่ลูกค้าจ่ายล่วงหน้า`;
+      const amountText = prompt(paymentPrompt, total > 0 ? String(total) : "");
+      if (amountText === null) return;
+      const amount = Number(String(amountText).replace(/,/g, ""));
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("กรอกยอดจ่ายให้ถูกต้อง");
+        return;
+      }
+      if (total > 0 && amount > total && !confirm(`ยอดจ่าย ${money.format(amount)} บาท มากกว่ายอดค้าง ${money.format(total)} บาท ต้องการบันทึกต่อใช่ไหม?`)) return;
+      try {
+        await api("addPayment", {
+          customerId: customer.id,
+          date: todayText(),
+          amount,
+          note: ""
+        });
+        showMessage("บันทึกยอดชำระแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`บันทึกยอดชำระไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.deletePaidHistoryBtn.addEventListener("click", async () => {
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const metric = getCustomerMetric(customer.id);
+      const entryCount = metric.paidDebts.length;
+      const paymentCount = metric.closedPayments.length;
+      const count = entryCount + paymentCount;
+      if (!count) {
+        showMessage("ลูกค้าคนนี้ยังไม่มีประวัติการจ่าย");
+        return;
+      }
+      const text = `ลบประวัติการจ่ายทั้งหมดของ "${customer.name}" จำนวน ${money.format(count)} รายการ ใช่ไหม?\nการลบนี้จะลบเฉพาะ DebtEntries=paid และ Payments=close`;
+      if (!confirm(text)) return;
+      try {
+        await api("deleteCustomerPaidHistory", { customerId: customer.id });
+        showMessage("ลบประวัติการจ่ายทั้งหมดแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`ลบประวัติการจ่ายทั้งหมดไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.entryForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const customer = selectedCustomer();
+      if (!customer) {
+        showMessage("เลือกลูกค้าก่อน");
+        return;
+      }
+      const amount = Number(els.entryAmount.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("กรอกยอดเงินให้ถูกต้อง");
+        return;
+      }
+      try {
+        await api("addDebtSeparate", {
+          customerId: customer.id,
+          date: els.entryDate.value,
+          amount,
+          note: els.entryNote.value.trim()
+        });
+        els.entryAmount.value = "";
+        els.entryNote.value = "";
+        els.entryForm.classList.remove("details-open");
+        els.entryDetailsToggle.textContent = "+";
+        els.entryDetailsToggle.setAttribute("aria-expanded", "false");
+        showMessage("เพิ่มยอดค้างแล้ว");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        showMessage(`เพิ่มยอดไม่สำเร็จ: ${error.message}`);
+      }
+    });
+
+    els.entryDate.value = todayText();
+    loadSettings();
+    render();
+    if (els.adminKey.value.trim()) {
+      loadData();
+    } else {
+      showMessage("กรอก admin key แล้วกดโหลดใหม่");
+    }
+  </script>
+</body>
+</html>
