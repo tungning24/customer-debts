@@ -417,62 +417,6 @@
       border-radius: 8px;
     }
 
-    .ledger-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .ledger-tab {
-      min-height: 46px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--text);
-      font-weight: 900;
-    }
-
-    .ledger-tab[data-ledger-tab="paid"] {
-      border-color: #22c55e;
-      color: #15803d;
-    }
-
-    .ledger-tab[data-ledger-tab="open"] {
-      border-color: #ef4444;
-      color: #b42318;
-    }
-
-    .ledger-tab[data-ledger-tab="history"] {
-      border-color: #3b82f6;
-      color: #1d4ed8;
-    }
-
-    .ledger-tab.active {
-      color: #fff;
-    }
-
-    .ledger-tab[data-ledger-tab="paid"].active {
-      background: #22c55e;
-    }
-
-    .ledger-tab[data-ledger-tab="open"].active {
-      background: #ef4444;
-    }
-
-    .ledger-tab[data-ledger-tab="history"].active {
-      background: #3b82f6;
-    }
-
-    .ledger-panel .table-wrap {
-      max-height: min(52vh, 520px);
-      overflow: auto;
-    }
-
-    .ledger-panel[hidden] {
-      display: none;
-    }
-
     .ledger-section {
       overflow: hidden;
       margin-top: 14px;
@@ -520,6 +464,7 @@
       font-size: 15px;
     }
 
+    .detail-toggle,
     .note-tip {
       border: 0;
       background: transparent;
@@ -527,11 +472,33 @@
       font-weight: 900;
     }
 
+    .detail-toggle {
+      min-width: 32px;
+      min-height: 32px;
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      background: #fbfdff;
+      color: #0f172a;
+      font-size: 20px;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22);
+    }
+
+    .detail-toggle:hover {
+      background: #eef4fb;
+      border-color: #64748b;
+    }
+
+    .section-history {
+      position: relative;
+    }
+
     .section-history .ledger-section-head {
-      justify-content: flex-end;
-      padding: 8px;
-      border-bottom: 1px solid var(--line);
-      background: #eff6ff;
+      position: absolute;
+      top: 8px;
+      right: 52px;
+      z-index: 3;
+      display: block;
     }
 
     .section-history .btn.delete-all {
@@ -541,6 +508,11 @@
       border-radius: 8px;
       font-size: 12px;
       box-shadow: none;
+    }
+
+    .section-history .summary-row td:nth-child(3) {
+      width: 210px;
+      padding-right: 128px;
     }
 
     .ledger-entry td {
@@ -1121,11 +1093,6 @@
         margin-top: 8px;
       }
 
-      .ledger-panel .table-wrap {
-        max-height: min(50vh, 480px);
-        overflow: auto;
-      }
-
       tr.paid-row {
         text-decoration: none;
         opacity: 0.72;
@@ -1170,10 +1137,26 @@
         width: 40px;
       }
 
+      .section-history .ledger-section-head {
+        top: 8px;
+        right: 44px;
+      }
+
       .section-history .btn.delete-all {
         min-height: 30px;
         padding: 0 6px;
         font-size: 11px;
+      }
+
+      .section-history .summary-row td:nth-child(3) {
+        width: 52px;
+        padding-right: 76px;
+      }
+
+      .detail-toggle {
+        min-width: 30px;
+        min-height: 30px;
+        font-size: 18px;
       }
 
       .ledger-section td::before {
@@ -1372,13 +1355,7 @@ if ('serviceWorker' in navigator) {
             <button class="btn entry-details-toggle" type="button" id="entryDetailsToggle" aria-expanded="false">+</button>
           </form>
 
-          <div class="ledger-tabs" role="tablist" aria-label="รายการลูกค้า">
-            <button class="ledger-tab active" type="button" data-ledger-tab="paid">จ่าย</button>
-            <button class="ledger-tab" type="button" data-ledger-tab="open">ค้าง</button>
-            <button class="ledger-tab" type="button" data-ledger-tab="history">ประวัติ</button>
-          </div>
-
-          <div class="ledger-section section-paid ledger-panel" data-ledger-panel="paid">
+          <div class="ledger-section section-paid">
             <div class="table-wrap">
               <table>
                 <tbody id="openPaymentRows">
@@ -1388,7 +1365,7 @@ if ('serviceWorker' in navigator) {
             </div>
           </div>
 
-          <div class="ledger-section section-open ledger-panel" data-ledger-panel="open" hidden>
+          <div class="ledger-section section-open">
             <div class="table-wrap">
               <table>
                 <tbody id="openEntryRows">
@@ -1398,7 +1375,7 @@ if ('serviceWorker' in navigator) {
             </div>
           </div>
 
-          <div class="ledger-section section-history ledger-panel" data-ledger-panel="history" hidden>
+          <div class="ledger-section section-history">
             <div class="ledger-section-head">
               <button class="btn delete-all small" type="button" id="deletePaidHistoryBtn">ลบทั้งหมด</button>
             </div>
@@ -1475,8 +1452,6 @@ if ('serviceWorker' in navigator) {
       entryDate: document.getElementById("entryDate"),
       entryAmount: document.getElementById("entryAmount"),
       entryNote: document.getElementById("entryNote"),
-      ledgerTabs: document.querySelectorAll("[data-ledger-tab]"),
-      ledgerPanels: document.querySelectorAll("[data-ledger-panel]"),
       openPaymentRows: document.getElementById("openPaymentRows"),
       openEntryRows: document.getElementById("openEntryRows"),
       paidEntryRows: document.getElementById("paidEntryRows"),
@@ -1760,6 +1735,9 @@ if ('serviceWorker' in navigator) {
     function renderEntryTable(tbody, entries, emptyText, statusLabel, isPaid, deleteAction = "deleteEntry", options = {}) {
       const rowId = `${options.rowPrefix || (isPaid ? "paid" : "open")}-details`;
       const isHistory = options.rowPrefix === "history";
+      const total = entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+      const summaryAmountClass = options.amountClass || (entries.length && entries.every(entry => entry.amountClass) ? entries[0].amountClass : "");
+      const summaryAmount = options.hideSummaryAmount ? "" : `<span class="amount ${summaryAmountClass}">${money.format(total)} ฿</span>`;
       let previousDate = "";
       const detailRows = entries.length ? entries.map(entry => {
         const itemDeleteAction = entry.deleteAction || deleteAction;
@@ -1771,7 +1749,7 @@ if ('serviceWorker' in navigator) {
         previousDate = dateValue || previousDate;
 
         return `
-          <tr class="detail-row ledger-entry ${isPaid ? "paid-row" : ""}" data-detail="${escapeHtml(rowId)}">
+          <tr class="detail-row ledger-entry ${isPaid ? "paid-row" : ""}" data-detail="${escapeHtml(rowId)}" hidden>
             <td class="entry-date">
               <span class="date-text">${escapeHtml(dateText)}</span>
               ${isHistory ? "" : `<span class="detail-time">${escapeHtml(formatEntryTime(entry))}</span>`}
@@ -1785,9 +1763,17 @@ if ('serviceWorker' in navigator) {
           </tr>
         `;
       }).join("")
-        : `<tr class="detail-row" data-detail="${escapeHtml(rowId)}"><td colspan="4">${escapeHtml(emptyText)}</td></tr>`;
+        : `<tr class="detail-row" data-detail="${escapeHtml(rowId)}" hidden><td colspan="4">${escapeHtml(emptyText)}</td></tr>`;
 
-      tbody.innerHTML = detailRows;
+      tbody.innerHTML = `
+        <tr class="summary-row" data-toggle="${escapeHtml(rowId)}">
+          <td><strong>${escapeHtml(statusLabel)}</strong></td>
+          <td>${summaryAmount}</td>
+          <td><span class="badge ${isPaid ? "paid" : ""}">${money.format(entries.length)} รายการ</span></td>
+          <td><button class="detail-toggle" type="button" aria-expanded="false" aria-label="ดูรายละเอียด">+</button></td>
+        </tr>
+        ${detailRows}
+      `;
     }
     async function deleteLedgerItem(button) {
       if (!confirm("ลบรายการนี้ใช่ไหม?")) return;
@@ -1800,11 +1786,17 @@ if ('serviceWorker' in navigator) {
       await loadData();
     }
 
-    function setLedgerTab(name) {
-      els.ledgerTabs.forEach(tab => tab.classList.toggle("active", tab.dataset.ledgerTab === name));
-      els.ledgerPanels.forEach(panel => {
-        panel.hidden = panel.dataset.ledgerPanel !== name;
+    function toggleLedgerDetails(row) {
+      const button = row.querySelector(".detail-toggle");
+      const details = document.querySelectorAll(`[data-detail="${row.dataset.toggle}"]`);
+      const nextHidden = !details[0]?.hidden;
+      details.forEach(detail => {
+        detail.hidden = nextHidden;
       });
+      if (button) {
+        button.textContent = nextHidden ? "+" : "-";
+        button.setAttribute("aria-expanded", String(!nextHidden));
+      }
     }
 
     function renderLedger() {
@@ -1817,7 +1809,6 @@ if ('serviceWorker' in navigator) {
         els.selectedTotal.classList.remove("credit");
         els.payCustomerBtn.disabled = true;
         els.deletePaidHistoryBtn.disabled = true;
-        els.deletePaidHistoryBtn.closest(".ledger-section-head").hidden = true;
         els.openPaymentRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
         els.openEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
         els.paidEntryRows.innerHTML = `<tr><td colspan="4">เลือกชื่อลูกค้าก่อน</td></tr>`;
@@ -1860,7 +1851,6 @@ if ('serviceWorker' in navigator) {
       els.selectedTotal.classList.toggle("credit", total < 0);
       els.payCustomerBtn.disabled = false;
       els.deletePaidHistoryBtn.disabled = historyEntries.length <= 0;
-      els.deletePaidHistoryBtn.closest(".ledger-section-head").hidden = historyEntries.length <= 0;
 
       const rows = debts
         .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.createdAt || a.updatedAt || "").localeCompare(String(b.createdAt || b.updatedAt || "")));
@@ -1943,9 +1933,6 @@ if ('serviceWorker' in navigator) {
       els.entryDetailsToggle.textContent = open ? "-" : "+";
       els.entryDetailsToggle.setAttribute("aria-expanded", String(open));
     });
-    els.ledgerTabs.forEach(tab => {
-      tab.addEventListener("click", () => setLedgerTab(tab.dataset.ledgerTab));
-    });
 
     document.addEventListener("click", event => {
       if (!event.target.closest("#customerPicker, #customerList")) {
@@ -1965,6 +1952,11 @@ if ('serviceWorker' in navigator) {
         return;
       }
 
+      const toggleRow = event.target.closest("[data-toggle]");
+      if (toggleRow) {
+        if (event.target.closest("button") && !event.target.closest(".detail-toggle")) return;
+        toggleLedgerDetails(toggleRow);
+      }
     });
 
     els.customerForm.addEventListener("submit", async event => {
