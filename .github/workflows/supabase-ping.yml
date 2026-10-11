@@ -1,4 +1,15 @@
-steps: 
+name: Ping Supabase to Keep Alive
+
+on:
+  schedule:
+    # รันทุก ๆ 4 วัน เวลาเที่ยงคืน
+    - cron: '0 0 */4 * *'
+  workflow_dispatch: # ให้กดปุ่มรันมือเองจากหน้า GitHub ได้
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
       - name: Send Request to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
