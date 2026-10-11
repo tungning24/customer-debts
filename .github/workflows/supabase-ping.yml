@@ -1,4 +1,4 @@
-steps:
+steps: 
       - name: Send Request to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
