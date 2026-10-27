@@ -3,7 +3,7 @@ name: Ping Supabase to Keep Alive
 on:
   schedule:
     # รันทุก ๆ 4 วัน เวลาเที่ยงคืน
-    - cron: '0 0 */4 * *'
+    - cron: '0 0 */2 * *'
   workflow_dispatch: # ให้กดปุ่มรันมือเองจากหน้า GitHub ได้
 
 jobs:
