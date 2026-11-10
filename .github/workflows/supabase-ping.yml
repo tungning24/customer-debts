@@ -20,4 +20,4 @@ jobs:
             -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=minimal" \
-            -d '{"updated_at": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"}'
+            -d '{"note": "'$(date -u +"%Y-%m-%d")'", "updated_at": "'$(date -u +"%Y-%m-%d %H:%M:%S.%6N+00")'"}'
