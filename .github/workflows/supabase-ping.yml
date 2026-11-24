@@ -1,26 +1,21 @@
-name: Ping Supabase to Keep Alive
+name: Supabase Keep-Alive
 
 on:
   schedule:
-    # รันทุก ๆ 4 วัน เวลาเที่ยงคืน
-    - cron: '0 0 */2 * *'
-  workflow_dispatch: # ให้กดปุ่มรันมือเองจากหน้า GitHub ได้
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
-  ping:
+  ping-supabase:
     runs-on: ubuntu-latest
     steps:
-      - name: Update Supabase Customer
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Install PostgreSQL client
         run: |
-          CURRENT_DATE=$(date -u +"%Y-%m-%d")
-          CURRENT_TIME=$(date -u +"%Y-%m-%d %H:%M:%S.%6N+00")
-          
-          curl -i -X PATCH "${SUPABASE_URL}/rest/v1/customers?id=eq.d81f975e-423c-44cc-ade1-3d75ed61f6f1" \
-            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: return=minimal" \
-            -d "{\"note\": \"$CURRENT_DATE\", \"updated_at\": \"$CURRENT_TIME\"}"
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client
+
+      - name: Update customer via direct Postgres connection
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "UPDATE public.customers SET note = to_char(now() at time zone 'utc', 'YYYY-MM-DD'), updated_at = (now() at time zone 'utc') WHERE id = 'd81f975e-423c-44cc-ade1-3d75ed61f6f1';"
